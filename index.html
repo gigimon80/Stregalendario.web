@@ -7,480 +7,371 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <title>Stregalendario</title>
 <style>
-/* ── Reset & base ─────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
 body{
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  min-height:100dvh;
-  background:var(--bg-deep);
-  color:var(--text-main);
+  background:var(--bg-deep);color:var(--text-main);
   transition:background .25s,color .25s;
-  overscroll-behavior:none;
 }
 
-/* ── Design tokens — LIGHT default ────────────────────────── */
+/* ── Tokens: light default ── */
 :root{
-  --primary:#7C3AED;
-  --primary-lt:#C084FC;
-  --cinema:#FF6B6B;
-  --musica:#A78BFA;
-  --teatro:#FBBF24;
-  --natura:#34D399;
-  --drink:#FB923C;
+  --primary:#7C3AED;--primary-lt:#C084FC;
+  --cinema:#FF6B6B;--musica:#A78BFA;--teatro:#FBBF24;--natura:#34D399;--drink:#FB923C;
   --today-border:#2DD4BF;
-  /* light (default) */
-  --bg-deep:#F2F2FA;
-  --bg-card:#FFFFFF;
-  --bg-field:#EEEEEF;
-  --border:#D0D0E8;
-  --text-main:#1A1A30;
-  --text-sub:#4A4A70;
-  --text-muted:#7878A0;
-  --text-empty:#A0A0C0;
-  --today-bg:#E0F7F4;
-  --today-text:#0D9488;
-  --radius:14px;
-  --shadow:0 4px 24px rgba(0,0,0,.12);
+  --bg-deep:#F2F2FA;--bg-card:#FFF;--bg-field:#EEEEEF;
+  --border:#D0D0E8;--text-main:#1A1A30;--text-sub:#4A4A70;
+  --text-muted:#7878A0;--text-empty:#A0A0C0;
+  --today-bg:#E0F7F4;--today-text:#0D9488;
+  --radius:14px;--shadow:0 4px 24px rgba(0,0,0,.12);
 }
 body.dark{
-  --bg-deep:#0A0A14;
-  --bg-card:#14142A;
-  --bg-field:#1C1C38;
-  --border:#2E2E50;
-  --text-main:#F5F0FF;
-  --text-sub:#BBB3D4;
-  --text-muted:#7E7A9A;
-  --text-empty:#6B6890;
-  --today-bg:#0D3D3D;
-  --today-text:#2DD4BF;
+  --bg-deep:#0A0A14;--bg-card:#14142A;--bg-field:#1C1C38;
+  --border:#2E2E50;--text-main:#F5F0FF;--text-sub:#BBB3D4;
+  --text-muted:#7E7A9A;--text-empty:#6B6890;
+  --today-bg:#0D3D3D;--today-text:#2DD4BF;
   --shadow:0 4px 24px rgba(0,0,0,.45);
 }
 
-/* ── Layout ─────────────────────────────────────────────────── */
-#app{display:flex;flex-direction:column;min-height:100dvh}
-.screen{
-  display:none;flex-direction:column;flex:1;
-  padding-bottom:env(safe-area-inset-bottom,0px);
-}
+/* ── App shell: full height, no scroll on body ── */
+#app{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden}
 .screen.active{display:flex}
 
-/* ── Top bar ─────────────────────────────────────────────────── */
+/* ── Topbar ── */
 .topbar{
+  flex-shrink:0;
   display:flex;align-items:center;justify-content:space-between;
   padding:14px 16px 10px;
   padding-top:calc(14px + env(safe-area-inset-top,0px));
-  background:var(--bg-deep);
-  position:sticky;top:0;z-index:50;
-  border-bottom:1px solid var(--border);
+  background:var(--bg-deep);border-bottom:1px solid var(--border);z-index:50;
 }
-.topbar-title{font-size:20px;font-weight:700;color:var(--text-main)}
+.topbar-title{font-size:19px;font-weight:700;color:var(--text-main)}
 .topbar-actions{display:flex;gap:8px}
 .icon-btn{
   background:var(--bg-field);border:none;border-radius:10px;
   color:var(--text-sub);cursor:pointer;
   width:38px;height:38px;display:flex;align-items:center;justify-content:center;
-  font-size:18px;transition:background .15s,color .15s;
+  font-size:18px;transition:background .15s;
 }
 .icon-btn:active{background:var(--border)}
 
-/* ── Calendar ─────────────────────────────────────────────────── */
-.cal-nav{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:8px 16px;gap:8px;
+/* ── Calendar screen layout: fixed column, no page scroll ── */
+#screen-calendar{
+  display:none;flex-direction:column;
+  height:100dvh;overflow:hidden;
 }
-.cal-month-label{font-size:17px;font-weight:700;color:var(--text-main);flex:1;text-align:center}
+#screen-calendar.active{display:flex}
 
-/* View tabs — bottom bar */
+.cal-nav{
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 14px;gap:8px;
+}
+.cal-nav-label{font-size:16px;font-weight:700;color:var(--text-main);flex:1;text-align:center}
+
+/* ── Cal area: fixed height depending on view ── */
+#cal-area{flex-shrink:0}
+
+/* ── Event list: takes remaining space, scrolls ── */
+.event-list{
+  flex:1;overflow-y:auto;padding:6px 12px 8px;
+  -webkit-overflow-scrolling:touch;min-height:0;
+}
+
+/* ── Bottom bar: always pinned ── */
 .bottom-bar{
-  display:flex;flex-direction:column;
-  border-top:1px solid var(--border);
-  background:var(--bg-deep);
+  flex-shrink:0;
+  border-top:1px solid var(--border);background:var(--bg-deep);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
+
+/* Filters: 2 rows via flex-wrap */
 .filters{
-  display:flex;gap:8px;padding:8px 12px 6px;overflow-x:auto;
-  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  display:flex;flex-wrap:wrap;gap:5px;padding:7px 12px 5px;
   border-bottom:1px solid var(--border);
 }
-.filters::-webkit-scrollbar{display:none}
 .chip{
-  flex-shrink:0;padding:5px 12px;border-radius:20px;
+  padding:4px 11px;border-radius:20px;
   border:1.5px solid var(--border);background:var(--bg-field);
-  color:var(--text-sub);font-size:12px;font-weight:500;cursor:pointer;
+  color:var(--text-sub);font-size:11.5px;font-weight:500;cursor:pointer;
   transition:all .15s;white-space:nowrap;
 }
-.chip.active{border-color:var(--primary);background:rgba(124,58,237,.12);color:var(--primary)}
-body.dark .chip.active{background:rgba(124,58,237,.22);color:var(--primary-lt)}
-.view-tabs{
-  display:flex;gap:0;
-}
-.view-tab{
-  flex:1;padding:10px 4px 8px;border-radius:0;font-size:12px;font-weight:600;
-  color:var(--text-muted);cursor:pointer;border:none;background:transparent;
-  transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:2px;
-}
-.view-tab .tab-icon{font-size:18px}
-.view-tab .tab-label{font-size:10px;letter-spacing:.03em}
-.view-tab.active{color:var(--primary)}
-.view-tab.active .tab-icon{transform:scale(1.1)}
+.chip.active{border-color:var(--primary);background:rgba(124,58,237,.13);color:var(--primary);font-weight:700}
+body.dark .chip.active{background:rgba(124,58,237,.24);color:var(--primary-lt)}
 
-.cal-grid{
-  display:grid;grid-template-columns:repeat(7,1fr);
-  gap:2px;padding:4px 8px;
+/* View tabs */
+.view-tabs{display:flex}
+.view-tab{
+  flex:1;padding:8px 4px 6px;border:none;background:transparent;
+  color:var(--text-muted);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  transition:color .15s,background .15s;
+  position:relative;
 }
-.cal-header{
-  display:grid;grid-template-columns:repeat(7,1fr);
-  padding:0 8px;gap:2px;
+.view-tab .tab-icon{font-size:17px;transition:transform .15s}
+.view-tab .tab-label{font-size:10px;font-weight:600;letter-spacing:.02em}
+/* Active: purple pill background */
+.view-tab.active{color:var(--primary)}
+.view-tab.active::before{
+  content:'';position:absolute;inset:4px 8px;border-radius:10px;
+  background:rgba(124,58,237,.12);
 }
-.cal-header-day{
-  text-align:center;font-size:11px;font-weight:600;
-  color:var(--text-muted);padding:4px 0;text-transform:uppercase;
-}
+body.dark .view-tab.active::before{background:rgba(124,58,237,.25)}
+.view-tab.active .tab-icon{transform:scale(1.12)}
+
+/* ── Month grid ── */
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);padding:2px 8px 0}
+.cal-header-day{text-align:center;font-size:10px;font-weight:700;color:var(--text-muted);padding:2px 0;text-transform:uppercase}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;padding:2px 6px 4px}
 .cal-cell{
-  min-height:52px;border-radius:10px;padding:4px 3px;
-  cursor:pointer;transition:background .15s;position:relative;
-  display:flex;flex-direction:column;align-items:center;gap:2px;
+  min-height:46px;border-radius:9px;padding:3px 2px;
+  cursor:pointer;transition:background .12s;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
 }
 .cal-cell:active{background:var(--bg-field)}
 .cal-cell.other-month .cal-day-num{color:var(--text-empty)}
 .cal-cell.today{background:var(--today-bg);border:1.5px solid var(--today-border)}
-.cal-cell.selected{background:rgba(124,58,237,.15);border:1.5px solid var(--primary)}
+.cal-cell.selected{background:rgba(124,58,237,.13);border:1.5px solid var(--primary)}
 .cal-day-num{
-  font-size:14px;font-weight:600;color:var(--text-main);
-  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
-  border-radius:50%;
+  font-size:13px;font-weight:600;color:var(--text-main);
+  width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:50%;
 }
 .cal-cell.today .cal-day-num{color:var(--today-text)}
-.cal-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;max-width:36px}
-.cal-dot{width:6px;height:6px;border-radius:50%}
+.cal-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;max-width:32px}
+.cal-dot{width:5px;height:5px;border-radius:50%}
 
-/* ── Week view — vertical column layout ──────────────────────── */
-.week-col{
-  display:flex;flex-direction:column;gap:0;overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-  padding:0 12px 8px;
-}
+/* ── Week view: compact rows, no inner scroll ── */
+.week-col{display:flex;flex-direction:column}
 .week-row{
-  display:flex;align-items:stretch;gap:10px;
+  display:flex;align-items:center;gap:8px;
   border-bottom:1px solid var(--border);
   cursor:pointer;transition:background .12s;
-  min-height:52px;
+  padding:5px 12px;min-height:0;
 }
 .week-row:last-child{border-bottom:none}
 .week-row:active{background:var(--bg-field)}
 .week-row.today{background:var(--today-bg)}
-.week-row.selected{background:rgba(124,58,237,.08);}
-.week-row-date{
-  width:52px;flex-shrink:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;padding:10px 0;gap:1px;
-}
-.week-row-dayname{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase}
-.week-row-daynum{font-size:20px;font-weight:700;color:var(--text-main)}
 .week-row.today .week-row-daynum{color:var(--today-text)}
-.week-row-events{
-  flex:1;display:flex;flex-direction:column;justify-content:center;
-  gap:3px;padding:8px 0;
+.week-row.selected{background:rgba(124,58,237,.08);border-left:3px solid var(--primary)}
+.week-row-date{
+  width:44px;flex-shrink:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:0;
 }
-.week-row-event-pill{
-  display:flex;align-items:center;gap:5px;
-  padding:3px 8px;border-radius:6px;
-  font-size:12px;font-weight:600;color:#fff;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  max-width:100%;
+.week-row-dayname{font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase}
+.week-row-daynum{font-size:17px;font-weight:800;color:var(--text-main);line-height:1.1}
+.week-row-events{flex:1;display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+.week-pill{
+  padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;
+  color:#fff;white-space:nowrap;max-width:140px;
+  overflow:hidden;text-overflow:ellipsis;
 }
-.week-row-empty{font-size:12px;color:var(--text-empty);padding:4px 0}
-.week-row-dot-row{display:flex;gap:3px;align-items:center}
+.week-more{font-size:10px;color:var(--text-muted);padding:2px 4px}
 
-/* ── Event list ───────────────────────────────────────────────── */
-.event-list{
-  flex:1;overflow-y:auto;padding:8px 12px 12px;
-  -webkit-overflow-scrolling:touch;
+/* ── Day view: just shows label, events in list ── */
+.day-header{
+  padding:8px 16px 6px;
+  font-size:14px;font-weight:700;color:var(--text-sub);
 }
+
+/* ── Slide transition ── */
+.cal-slide-enter-left{animation:slideInLeft .2s ease}
+.cal-slide-enter-right{animation:slideInRight .2s ease}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── Touch swipe hint overlay (arrow) ── */
+.swipe-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);
+  font-size:28px;opacity:0;pointer-events:none;
+  transition:opacity .15s;color:var(--primary);z-index:20;
+}
+.swipe-arrow.left{left:6px}
+.swipe-arrow.right{right:6px}
+.swipe-arrow.show{opacity:.55}
+#cal-wrapper{position:relative;flex-shrink:0}
+
+/* ── Event cards ── */
 .date-section-label{
-  font-size:12px;font-weight:700;color:var(--text-muted);
-  text-transform:uppercase;letter-spacing:.06em;
-  padding:10px 4px 4px;
+  font-size:11px;font-weight:700;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.06em;padding:8px 4px 3px;
 }
 .event-card{
   background:var(--bg-card);border-radius:var(--radius);
-  padding:14px 14px 12px;margin-bottom:8px;
+  padding:12px 13px 10px;margin-bottom:7px;
   cursor:pointer;transition:transform .1s;
   border:1px solid var(--border);
-  display:flex;flex-direction:column;gap:6px;
+  display:flex;flex-direction:column;gap:5px;
 }
 .event-card:active{transform:scale(.98)}
 .event-card-top{display:flex;align-items:flex-start;gap:10px}
 .event-type-badge{
-  flex-shrink:0;width:36px;height:36px;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;font-size:18px;
+  flex-shrink:0;width:34px;height:34px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-size:17px;
 }
 .event-card-info{flex:1;min-width:0}
-.event-title{font-size:15px;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.event-meta{font-size:12px;color:var(--text-muted);margin-top:2px}
-.event-attendees{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)}
+.event-title{font-size:14px;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.event-meta{font-size:11px;color:var(--text-muted);margin-top:1px}
+.event-attendees{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-sub)}
 .attendee-avatar{
-  width:22px;height:22px;border-radius:50%;background:var(--primary);
-  color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;
-  border:1.5px solid var(--bg-card);margin-left:-6px;
+  width:20px;height:20px;border-radius:50%;background:var(--primary);
+  color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--bg-card);margin-left:-5px;
 }
 .attendee-avatar:first-child{margin-left:0}
-.attend-me-dot{
-  width:8px;height:8px;border-radius:50%;background:var(--natura);
-  box-shadow:0 0 0 2px var(--bg-card);flex-shrink:0;
-}
+.attend-me-dot{width:8px;height:8px;border-radius:50%;background:var(--natura);box-shadow:0 0 0 2px var(--bg-card);flex-shrink:0}
 
 .empty-state{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  flex:1;gap:10px;padding:40px;color:var(--text-empty);text-align:center;
+  flex:1;gap:8px;padding:30px;color:var(--text-empty);text-align:center;min-height:80px;
 }
-.empty-state-icon{font-size:48px;opacity:.5}
+.empty-state-icon{font-size:36px;opacity:.45}
 
-/* ── FAB ──────────────────────────────────────────────────────── */
+/* ── FAB ── */
 .fab{
-  position:fixed;right:20px;bottom:calc(80px + env(safe-area-inset-bottom,0px));
-  width:52px;height:52px;border-radius:50%;
+  position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom,0px));
+  width:50px;height:50px;border-radius:50%;
   background:var(--primary);border:none;color:#fff;
   font-size:26px;cursor:pointer;box-shadow:var(--shadow);
   display:flex;align-items:center;justify-content:center;
   transition:transform .15s;z-index:40;
 }
-.fab:active{transform:scale(.9)}
+.fab:active{transform:scale(.88)}
 
-/* ── Auth screen ──────────────────────────────────────────────── */
+/* ── Auth ── */
 #screen-auth{
   background:linear-gradient(160deg,#0A0A14 0%,#14142A 60%,#1C0A3D 100%);
-  justify-content:space-between;padding:0;
+  justify-content:space-between;
 }
-.auth-header{padding:60px 28px 0;text-align:center}
-.auth-logo{font-size:64px;margin-bottom:8px}
-.auth-app-name{font-size:32px;font-weight:800;color:#F5F0FF;letter-spacing:-.5px}
-.auth-tagline{font-size:15px;color:#BBB3D4;margin-top:6px}
-.auth-tabs{display:flex;background:rgba(255,255,255,.1);border-radius:12px;padding:3px;margin:28px 28px 0}
-.auth-tab{
-  flex:1;padding:10px;border-radius:9px;font-size:14px;font-weight:600;
-  cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.5);transition:all .15s;
-}
+.auth-header{padding:56px 28px 0;text-align:center}
+.auth-logo{font-size:64px;margin-bottom:6px}
+.auth-app-name{font-size:30px;font-weight:800;color:#F5F0FF;letter-spacing:-.5px}
+.auth-tagline{font-size:14px;color:#BBB3D4;margin-top:5px}
+.auth-tabs{display:flex;background:rgba(255,255,255,.1);border-radius:12px;padding:3px;margin:24px 28px 0}
+.auth-tab{flex:1;padding:10px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.5);transition:all .15s}
 .auth-tab.active{background:var(--primary);color:#fff}
-.auth-body{padding:20px 28px 0;display:flex;flex-direction:column;gap:14px}
+.auth-body{padding:18px 28px 0;display:flex;flex-direction:column;gap:12px}
 .auth-field{
   background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);
-  border-radius:12px;padding:14px 16px;font-size:16px;color:#F5F0FF;
-  outline:none;width:100%;transition:border-color .15s;
-  -webkit-appearance:none;
+  border-radius:12px;padding:13px 16px;font-size:16px;color:#F5F0FF;
+  outline:none;width:100%;transition:border-color .15s;-webkit-appearance:none;
 }
 .auth-field:focus{border-color:var(--primary)}
-.auth-field::placeholder{color:rgba(255,255,255,.3)}
-.auth-error{font-size:13px;color:var(--cinema);text-align:center;min-height:16px}
-.auth-footer{padding:16px 28px calc(36px + env(safe-area-inset-bottom,0px))}
+.auth-field::placeholder{color:rgba(255,255,255,.28)}
+.auth-error{font-size:13px;color:var(--cinema);text-align:center;min-height:15px}
+.auth-footer{padding:14px 28px calc(32px + env(safe-area-inset-bottom,0px))}
 .btn-primary{
-  width:100%;padding:15px;border-radius:14px;
+  width:100%;padding:14px;border-radius:13px;
   background:var(--primary);border:none;color:#fff;
-  font-size:16px;font-weight:700;cursor:pointer;transition:opacity .15s;
-  -webkit-appearance:none;
+  font-size:16px;font-weight:700;cursor:pointer;transition:opacity .15s;-webkit-appearance:none;
 }
 .btn-primary:active{opacity:.8}
 .btn-primary:disabled{opacity:.4;cursor:default}
 
-/* ── Detail screen ───────────────────────────────────────────── */
-.detail-hero{padding:20px 20px 16px;display:flex;flex-direction:column;gap:8px;}
-.detail-hero-top{display:flex;align-items:flex-start;gap:12px}
-.detail-type-icon{
-  width:52px;height:52px;border-radius:14px;
-  display:flex;align-items:center;justify-content:center;font-size:26px;
-}
-.detail-title{font-size:22px;font-weight:800;color:var(--text-main);line-height:1.2}
-.detail-inserter{font-size:13px;color:var(--text-muted)}
-.detail-row{
-  display:flex;align-items:center;gap:10px;padding:10px 0;
-  border-bottom:1px solid var(--border);
-}
+/* ── Detail / Form / Settings ── */
+.detail-hero{padding:18px 18px 14px;display:flex;flex-direction:column;gap:7px}
+.detail-hero-top{display:flex;align-items:flex-start;gap:11px}
+.detail-type-icon{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.detail-title{font-size:20px;font-weight:800;color:var(--text-main);line-height:1.2}
+.detail-inserter{font-size:12px;color:var(--text-muted)}
+.detail-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
 .detail-row:last-child{border-bottom:none}
-.detail-row-icon{font-size:18px;width:24px;text-align:center;flex-shrink:0}
-.detail-row-content{display:flex;flex-direction:column;gap:2px;flex:1}
-.detail-row-label{font-size:12px;color:var(--text-muted)}
-.detail-row-value{font-size:15px;color:var(--text-main);font-weight:500}
-.detail-body{padding:0 20px;flex:1;overflow-y:auto}
+.detail-row-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0}
+.detail-row-content{display:flex;flex-direction:column;gap:1px;flex:1}
+.detail-row-label{font-size:11px;color:var(--text-muted)}
+.detail-row-value{font-size:14px;color:var(--text-main);font-weight:500}
+.detail-body{padding:0 18px;flex:1;overflow-y:auto}
 .attend-btn{
-  margin:14px 20px;padding:13px;border-radius:12px;
-  font-size:15px;font-weight:700;cursor:pointer;border:2px solid;
-  transition:all .15s;width:calc(100% - 40px);
-  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin:12px 18px;padding:12px;border-radius:11px;
+  font-size:14px;font-weight:700;cursor:pointer;border:2px solid;
+  transition:all .15s;width:calc(100% - 36px);
+  display:flex;align-items:center;justify-content:center;gap:7px;
 }
-.attend-btn.attending{background:rgba(52,211,153,.15);border-color:var(--natura);color:#059669}
+.attend-btn.attending{background:rgba(52,211,153,.12);border-color:var(--natura);color:#059669}
 body.dark .attend-btn.attending{color:var(--natura)}
-.attend-btn.not-attending{background:rgba(124,58,237,.08);border-color:var(--primary);color:var(--primary)}
+.attend-btn.not-attending{background:rgba(124,58,237,.07);border-color:var(--primary);color:var(--primary)}
 body.dark .attend-btn.not-attending{color:var(--primary-lt)}
-.detail-actions{display:flex;gap:10px;padding:10px 20px 20px}
-.btn-outline{
-  flex:1;padding:12px;border-radius:12px;border:1.5px solid var(--border);
-  background:transparent;color:var(--text-sub);font-size:14px;font-weight:600;cursor:pointer;
-}
-.btn-danger{
-  padding:12px 20px;border-radius:12px;border:1.5px solid var(--cinema);
-  background:rgba(255,107,107,.1);color:#dc2626;font-size:14px;font-weight:600;cursor:pointer;
-}
+.detail-actions{display:flex;gap:9px;padding:8px 18px 18px}
+.btn-outline{flex:1;padding:11px;border-radius:11px;border:1.5px solid var(--border);background:transparent;color:var(--text-sub);font-size:13px;font-weight:600;cursor:pointer}
+.btn-danger{padding:11px 18px;border-radius:11px;border:1.5px solid var(--cinema);background:rgba(255,107,107,.08);color:#dc2626;font-size:13px;font-weight:600;cursor:pointer}
 body.dark .btn-danger{color:var(--cinema)}
-.map-preview{
-  margin:8px 20px 16px;border-radius:12px;overflow:hidden;
-  border:1px solid var(--border);height:52px;
-  background:var(--bg-field);display:flex;align-items:center;justify-content:center;
-  cursor:pointer;font-size:13px;color:var(--text-sub);gap:8px;
-  text-decoration:none;font-weight:600;
-}
+.map-preview{margin:6px 18px 14px;border-radius:11px;border:1px solid var(--border);height:46px;background:var(--bg-field);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--text-sub);gap:7px;text-decoration:none;font-weight:600}
 
-/* ── Event form ──────────────────────────────────────────────── */
-.form-scroll{flex:1;overflow-y:auto;padding:16px 20px 100px;-webkit-overflow-scrolling:touch}
-.form-section{margin-bottom:18px}
-.form-label{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
-.form-field{
-  background:var(--bg-field);border:1.5px solid var(--border);
-  border-radius:12px;padding:13px 16px;font-size:15px;color:var(--text-main);
-  outline:none;width:100%;transition:border-color .15s;-webkit-appearance:none;
-}
+.form-scroll{flex:1;overflow-y:auto;padding:14px 18px 90px;-webkit-overflow-scrolling:touch}
+.form-section{margin-bottom:16px}
+.form-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.form-field{background:var(--bg-field);border:1.5px solid var(--border);border-radius:11px;padding:12px 14px;font-size:15px;color:var(--text-main);outline:none;width:100%;transition:border-color .15s;-webkit-appearance:none}
 .form-field:focus{border-color:var(--primary)}
 .form-field::placeholder{color:var(--text-empty)}
-.type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.type-option{
-  padding:12px;border-radius:12px;border:1.5px solid var(--border);
-  background:var(--bg-field);cursor:pointer;transition:all .15s;
-  display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--text-sub);
-}
+.type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.type-option{padding:10px;border-radius:11px;border:1.5px solid var(--border);background:var(--bg-field);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--text-sub)}
 .type-option.selected{border-width:2px;background:rgba(124,58,237,.08)}
 body.dark .type-option.selected{background:rgba(124,58,237,.2)}
-.attendee-list{display:flex;flex-direction:column;gap:6px}
-.attendee-row{
-  display:flex;align-items:center;gap:10px;padding:10px 14px;
-  background:var(--bg-field);border-radius:10px;cursor:pointer;transition:background .15s;
-}
+.attendee-list{display:flex;flex-direction:column;gap:5px}
+.attendee-row{display:flex;align-items:center;gap:9px;padding:9px 12px;background:var(--bg-field);border-radius:9px;cursor:pointer;transition:background .15s}
 .attendee-row:active{background:var(--border)}
-.attendee-check{
-  width:22px;height:22px;border-radius:6px;border:2px solid var(--border);
-  display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;
-  color:transparent;
-}
+.attendee-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;color:transparent;font-size:12px}
 .attendee-check.checked{background:var(--primary);border-color:var(--primary);color:#fff}
 .attendee-name{font-size:14px;color:var(--text-main);font-weight:500}
 
-/* ── Settings ────────────────────────────────────────────────── */
-.settings-scroll{flex:1;overflow-y:auto;padding:12px 16px 40px;-webkit-overflow-scrolling:touch}
-.settings-section{margin-bottom:24px}
-.settings-section-title{
-  font-size:12px;font-weight:700;color:var(--text-muted);
-  text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding:0 4px;
-}
-.settings-card{
-  background:var(--bg-card);border-radius:var(--radius);
-  border:1px solid var(--border);overflow:hidden;
-}
-.settings-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px;border-bottom:1px solid var(--border);gap:12px;
-}
+.settings-scroll{flex:1;overflow-y:auto;padding:10px 14px 36px;-webkit-overflow-scrolling:touch}
+.settings-section{margin-bottom:22px}
+.settings-section-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:9px;padding:0 3px}
+.settings-card{background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid var(--border);gap:11px}
 .settings-row:last-child{border-bottom:none}
 .settings-row-info{display:flex;flex-direction:column;gap:2px;flex:1}
-.settings-row-label{font-size:15px;color:var(--text-main);font-weight:500}
-.settings-row-sub{font-size:12px;color:var(--text-muted)}
-.toggle{
-  width:50px;height:28px;border-radius:14px;
-  background:var(--border);cursor:pointer;position:relative;transition:background .2s;
-  border:none;flex-shrink:0;
-}
+.settings-row-label{font-size:14px;color:var(--text-main);font-weight:500}
+.settings-row-sub{font-size:11px;color:var(--text-muted)}
+.toggle{width:48px;height:27px;border-radius:14px;background:var(--border);cursor:pointer;position:relative;transition:background .2s;border:none;flex-shrink:0}
 .toggle.on{background:var(--primary)}
-.toggle::after{
-  content:'';position:absolute;top:3px;left:3px;
-  width:22px;height:22px;border-radius:50%;background:#fff;
-  transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.3);
-}
-.toggle.on::after{transform:translateX(22px)}
-.cat-badge{
-  display:flex;align-items:center;gap:6px;padding:5px 10px;
-  border-radius:20px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;
-}
-.cat-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-.user-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.toggle::after{content:'';position:absolute;top:2.5px;left:2.5px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.28)}
+.toggle.on::after{transform:translateX(21px)}
+.cat-badge{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:18px;font-size:12px;font-weight:600;color:#fff;cursor:pointer}
+.cat-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:5px}
+.user-row{display:flex;align-items:center;gap:11px;padding:11px 15px;border-bottom:1px solid var(--border)}
 .user-row:last-child{border-bottom:none}
-.user-avatar{
-  width:38px;height:38px;border-radius:50%;background:var(--primary);
-  color:#fff;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .user-info{flex:1}
-.user-name{font-size:15px;color:var(--text-main);font-weight:600}
-.user-email{font-size:12px;color:var(--text-muted)}
-.me-badge{
-  font-size:10px;font-weight:700;color:var(--primary);background:rgba(124,58,237,.12);
-  padding:3px 8px;border-radius:10px;
-}
+.user-name{font-size:14px;color:var(--text-main);font-weight:600}
+.user-email{font-size:11px;color:var(--text-muted)}
+.me-badge{font-size:10px;font-weight:700;color:var(--primary);background:rgba(124,58,237,.11);padding:3px 7px;border-radius:9px}
 
-/* ── Modal / Dialog ─────────────────────────────────────────── */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;
-  display:flex;align-items:flex-end;justify-content:center;
-  opacity:0;pointer-events:none;transition:opacity .2s;
-}
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal-sheet{
-  background:var(--bg-card);border-radius:22px 22px 0 0;
-  padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));
-  width:100%;max-width:560px;max-height:85dvh;overflow-y:auto;
-  transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);
-}
+.modal-sheet{background:var(--bg-card);border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));width:100%;max-width:560px;max-height:85dvh;overflow-y:auto;transform:translateY(100%);transition:transform .24s cubic-bezier(.4,0,.2,1)}
 .modal-overlay.open .modal-sheet{transform:translateY(0)}
-.modal-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 16px}
-.modal-title{font-size:18px;font-weight:800;color:var(--text-main);margin-bottom:16px}
-.modal-actions{display:flex;gap:10px;margin-top:16px}
-.btn-secondary{
-  flex:1;padding:13px;border-radius:12px;
-  border:1.5px solid var(--border);background:transparent;
-  color:var(--text-sub);font-size:15px;font-weight:600;cursor:pointer;
-}
-.btn-primary-sm{
-  flex:1;padding:13px;border-radius:12px;
-  background:var(--primary);border:none;color:#fff;
-  font-size:15px;font-weight:600;cursor:pointer;
-}
+.modal-handle{width:34px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 14px}
+.modal-title{font-size:17px;font-weight:800;color:var(--text-main);margin-bottom:14px}
+.modal-actions{display:flex;gap:9px;margin-top:14px}
+.btn-secondary{flex:1;padding:12px;border-radius:11px;border:1.5px solid var(--border);background:transparent;color:var(--text-sub);font-size:14px;font-weight:600;cursor:pointer}
+.btn-primary-sm{flex:1;padding:12px;border-radius:11px;background:var(--primary);border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
 
-/* ── Toast ───────────────────────────────────────────────────── */
-.toast{
-  position:fixed;bottom:calc(90px + env(safe-area-inset-bottom,0px));
-  left:50%;transform:translateX(-50%) translateY(16px);
-  background:var(--bg-card);border:1px solid var(--border);
-  color:var(--text-main);padding:10px 20px;border-radius:20px;
-  font-size:14px;font-weight:500;opacity:0;transition:all .2s;
-  z-index:200;white-space:nowrap;box-shadow:var(--shadow);
-}
+/* ── Toast ── */
+.toast{position:fixed;bottom:calc(84px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(14px);background:var(--bg-card);border:1px solid var(--border);color:var(--text-main);padding:9px 18px;border-radius:18px;font-size:13px;font-weight:500;opacity:0;transition:all .2s;z-index:200;white-space:nowrap;box-shadow:var(--shadow)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ── Splash ───────────────────────────────────────────────────── */
-#screen-splash{background:#0A0A14;align-items:center;justify-content:center;gap:12px}
+/* ── Splash ── */
+#screen-splash{background:#0A0A14;align-items:center;justify-content:center;gap:10px;height:100dvh}
 .splash-logo{font-size:80px;animation:pulse 1.5s ease infinite}
-.splash-name{font-size:28px;font-weight:800;color:#F5F0FF}
+.splash-name{font-size:27px;font-weight:800;color:#F5F0FF}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-
-/* ── Spinner ──────────────────────────────────────────────────── */
-.spinner{
-  width:28px;height:28px;border-radius:50%;
-  border:3px solid rgba(255,255,255,.2);border-top-color:#C084FC;
-  animation:spin .6s linear infinite;
-}
+.spinner{width:26px;height:26px;border-radius:50%;border:3px solid rgba(255,255,255,.18);border-top-color:#C084FC;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── Scrollbar ────────────────────────────────────────────────── */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 </style>
 </head>
-<body><!-- light by default, dark class added by JS if needed -->
-
+<body>
 <div id="app">
 
 <!-- Splash -->
 <div id="screen-splash" class="screen active">
   <div class="splash-logo">👩‍🦰</div>
   <div class="splash-name">Stregalendario</div>
-  <div class="spinner" style="margin-top:20px"></div>
+  <div class="spinner" style="margin-top:18px"></div>
 </div>
 
 <!-- Auth -->
@@ -499,12 +390,12 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
       <input id="auth-name" class="auth-field" type="text" placeholder="Il tuo nome" autocomplete="name" style="display:none"/>
       <input id="auth-email" class="auth-field" type="email" placeholder="Email" autocomplete="email" inputmode="email"/>
       <div style="position:relative">
-        <input id="auth-pwd" class="auth-field" type="password" placeholder="Password" autocomplete="current-password" style="padding-right:48px"/>
-        <button onclick="togglePwd('auth-pwd')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:18px">👁</button>
+        <input id="auth-pwd" class="auth-field" type="password" placeholder="Password" autocomplete="current-password" style="padding-right:46px"/>
+        <button onclick="togglePwd('auth-pwd')" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.38);cursor:pointer;font-size:17px">👁</button>
       </div>
       <div id="auth-confirm-wrap" style="display:none;position:relative">
-        <input id="auth-confirm" class="auth-field" type="password" placeholder="Conferma password" autocomplete="new-password" style="padding-right:48px"/>
-        <button onclick="togglePwd('auth-confirm')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:18px">👁</button>
+        <input id="auth-confirm" class="auth-field" type="password" placeholder="Conferma password" autocomplete="new-password" style="padding-right:46px"/>
+        <button onclick="togglePwd('auth-confirm')" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.38);cursor:pointer;font-size:17px">👁</button>
       </div>
       <div class="auth-error" id="auth-error"></div>
     </div>
@@ -523,28 +414,32 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
       <button class="icon-btn" onclick="showScreen('settings')" title="Impostazioni">⚙️</button>
     </div>
   </div>
-  <!-- Calendar area (grid/week col/day header) -->
   <div class="cal-nav">
-    <button class="icon-btn" onclick="navPeriod(-1)">‹</button>
-    <div class="cal-month-label" id="period-label">Giugno 2026</div>
-    <button class="icon-btn" onclick="navPeriod(1)">›</button>
+    <button class="icon-btn" onclick="navPeriod(-1)" id="btn-prev">‹</button>
+    <div class="cal-nav-label" id="period-label"></div>
+    <button class="icon-btn" onclick="navPeriod(1)" id="btn-next">›</button>
   </div>
-  <div id="cal-area"></div>
-  <!-- Events for selected period/day -->
+  <!-- Calendar grid/week/day area with swipe support -->
+  <div id="cal-wrapper">
+    <div class="swipe-arrow left" id="swipe-left">‹</div>
+    <div class="swipe-arrow right" id="swipe-right">›</div>
+    <div id="cal-area"></div>
+  </div>
+  <!-- Event list -->
   <div class="event-list" id="event-list"></div>
-  <!-- Bottom bar: filters + view tabs -->
+  <!-- Bottom bar always visible -->
   <div class="bottom-bar">
     <div class="filters" id="filters-bar">
       <div class="chip" data-filter="__partecipo__" onclick="toggleFilter(this)">✅ Partecipo</div>
     </div>
-    <div class="view-tabs">
-      <button class="view-tab active" onclick="setView('month',this)">
+    <div class="view-tabs" id="view-tabs">
+      <button class="view-tab active" data-view="month" onclick="setView('month',this)">
         <span class="tab-icon">📅</span><span class="tab-label">Mese</span>
       </button>
-      <button class="view-tab" onclick="setView('week',this)">
+      <button class="view-tab" data-view="week" onclick="setView('week',this)">
         <span class="tab-icon">📋</span><span class="tab-label">Settimana</span>
       </button>
-      <button class="view-tab" onclick="setView('day',this)">
+      <button class="view-tab" data-view="day" onclick="setView('day',this)">
         <span class="tab-icon">☀️</span><span class="tab-label">Giorno</span>
       </button>
     </div>
@@ -582,69 +477,36 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
   <div class="settings-scroll" id="settings-body"></div>
 </div>
 
-</div><!-- #app -->
+</div>
 
 <div class="toast" id="toast"></div>
-
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
-  <div class="modal-sheet" id="modal-sheet">
-    <div class="modal-handle"></div>
-    <div id="modal-content"></div>
-  </div>
+  <div class="modal-sheet"><div class="modal-handle"></div><div id="modal-content"></div></div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  updateProfile, onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc,
-  onSnapshot, query, orderBy, getDoc, deleteField
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,updateProfile,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import{getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,orderBy,getDoc,deleteField}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyATEM0SUbMivlkensO5h-DGjXEDFyIQKYE",
-  authDomain: "stregalendario.firebaseapp.com",
-  projectId: "stregalendario",
-  storageBucket: "stregalendario.firebasestorage.app",
-  messagingSenderId: "1066064406702",
-  appId: "1:1066064406702:android:578cd32d315a098a7e653f"
-};
-const fbApp = initializeApp(firebaseConfig);
-const auth  = getAuth(fbApp);
-const db    = getFirestore(fbApp);
+const fbApp=initializeApp({apiKey:"AIzaSyATEM0SUbMivlkensO5h-DGjXEDFyIQKYE",authDomain:"stregalendario.firebaseapp.com",projectId:"stregalendario",storageBucket:"stregalendario.firebasestorage.app",messagingSenderId:"1066064406702",appId:"1:1066064406702:android:578cd32d315a098a7e653f"});
+const auth=getAuth(fbApp),db=getFirestore(fbApp);
 
-// ── State ──────────────────────────────────────────────────────
-let currentUser  = null;
-let allEvents    = [];
-let allUsers     = [];
-let allCategories = {
-  cinema:{label:"Cinema",emoji:"🎬",colorHex:"#FF6B6B"},
-  musica:{label:"Musica",emoji:"🎵",colorHex:"#A78BFA"},
-  teatro:{label:"Teatro",emoji:"🎭",colorHex:"#FBBF24"},
-  natura:{label:"Natura",emoji:"🌿",colorHex:"#34D399"},
-  drink: {label:"Drink/Cibo",emoji:"🍹",colorHex:"#FB923C"},
-};
-let activeFilters = new Set();
-let calView  = "month";
-let calYear  = new Date().getFullYear();
-let calMonth = new Date().getMonth();
-let selDate  = null;
-let weekStart= null;
-let navHistory = [];
-let unsubEvents=null, unsubCats=null, unsubUsers=null;
-let editingEventId = null;
-let isDark = false; // light by default
+// ── State ──
+let currentUser=null,allEvents=[],allUsers=[];
+let allCategories={cinema:{label:"Cinema",emoji:"🎬",colorHex:"#FF6B6B"},musica:{label:"Musica",emoji:"🎵",colorHex:"#A78BFA"},teatro:{label:"Teatro",emoji:"🎭",colorHex:"#FBBF24"},natura:{label:"Natura",emoji:"🌿",colorHex:"#34D399"},drink:{label:"Drink/Cibo",emoji:"🍹",colorHex:"#FB923C"}};
+let activeFilters=new Set();
+let calView="month",calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
+let selDate=null,weekStart=null;
+let navHistory=[],unsubEvents=null,unsubCats=null,unsubUsers=null;
+let editingEventId=null,isDark=false;
+// double-tap tracking per view tab
+let lastTabTap={month:0,week:0,day:0};
 
-// ── Helpers ────────────────────────────────────────────────────
-function todayStr(){
-  const d=new Date();
-  return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
-}
-function p2(n){return String(n).padStart(2,'0')}
-function dateStr(y,m,d){return `${y}-${p2(m+1)}-${p2(d)}`}
+// ── Helpers ──
+const p2=n=>String(n).padStart(2,'0');
+function todayStr(){const d=new Date();return`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`}
+function dateStr(y,m,d){return`${y}-${p2(m+1)}-${p2(d)}`}
 function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
 function formatDate(s){return parseDate(s).toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
 function formatDateShort(s){return parseDate(s).toLocaleDateString('it-IT',{day:'numeric',month:'long'})}
@@ -652,10 +514,10 @@ function catColor(k){return allCategories[k]?.colorHex||'#7C3AED'}
 function catEmoji(k){return allCategories[k]?.emoji||'📅'}
 function catLabel(k){return allCategories[k]?.label||k}
 function getWeekMonday(d){const dt=new Date(d);const day=dt.getDay()||7;dt.setDate(dt.getDate()-day+1);return dt}
-function dateToStr(d){return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`}
-window.escHtml=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function dateToStr(d){return`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`}
+window.escHtml=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-// ── Navigation ─────────────────────────────────────────────────
+// ── Navigation ──
 window.showScreen=function(id,push=true){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
@@ -664,18 +526,17 @@ window.showScreen=function(id,push=true){
 };
 window.historyBack=function(){
   navHistory.pop();
-  const prev=navHistory[navHistory.length-1]||'calendar';
-  showScreen(prev,false);
+  showScreen(navHistory[navHistory.length-1]||'calendar',false);
 };
 
-// ── Toast ──────────────────────────────────────────────────────
+// ── Toast ──
 window.showToast=function(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2200);
 };
 
-// ── Auth UI ────────────────────────────────────────────────────
+// ── Auth UI ──
 window.switchAuthTab=function(tab){
   document.getElementById('tab-login').classList.toggle('active',tab==='login');
   document.getElementById('tab-register').classList.toggle('active',tab==='register');
@@ -684,23 +545,17 @@ window.switchAuthTab=function(tab){
   document.getElementById('auth-btn').textContent=tab==='login'?'Accedi':'Registrati';
   document.getElementById('auth-error').textContent='';
 };
-window.togglePwd=function(fieldId){
-  const f=document.getElementById(fieldId);
-  f.type=f.type==='password'?'text':'password';
-};
+window.togglePwd=function(id){const f=document.getElementById(id);f.type=f.type==='password'?'text':'password'};
 
-// ── Auth actions ───────────────────────────────────────────────
 window.doAuth=async function(){
   const isLogin=document.getElementById('tab-login').classList.contains('active');
-  const btn=document.getElementById('auth-btn');
-  const errEl=document.getElementById('auth-error');
+  const btn=document.getElementById('auth-btn'),errEl=document.getElementById('auth-error');
   errEl.textContent='';btn.disabled=true;btn.textContent='…';
   try{
     const email=document.getElementById('auth-email').value.trim();
     const pwd=document.getElementById('auth-pwd').value;
-    if(isLogin){
-      await signInWithEmailAndPassword(auth,email,pwd);
-    } else {
+    if(isLogin){await signInWithEmailAndPassword(auth,email,pwd);}
+    else{
       const name=document.getElementById('auth-name').value.trim();
       const conf=document.getElementById('auth-confirm').value;
       if(!name) throw new Error("Inserisci il tuo nome");
@@ -709,90 +564,55 @@ window.doAuth=async function(){
       await updateProfile(cred.user,{displayName:name});
       await setDoc(doc(db,'users',cred.user.uid),{name,email,displayName:name});
     }
-  } catch(e){
-    errEl.textContent=e.message||'Errore';
-    btn.disabled=false;btn.textContent=isLogin?'Accedi':'Registrati';
-  }
+  }catch(e){errEl.textContent=e.message||'Errore';btn.disabled=false;btn.textContent=isLogin?'Accedi':'Registrati';}
 };
 
-// ── Auth state ─────────────────────────────────────────────────
 onAuthStateChanged(auth,async user=>{
   currentUser=user;
   if(user){
-    try{
-      const name=user.displayName||user.email?.split('@')[0]||'Utente';
-      await setDoc(doc(db,'users',user.uid),{name,email:user.email||'',displayName:name},{merge:true});
-    }catch(_){}
-    startListeners();
-    navHistory=['calendar'];
-    showScreen('calendar',false);
-  } else {
-    stopListeners();
-    navHistory=['auth'];
-    showScreen('auth',false);
-  }
+    try{const name=user.displayName||user.email?.split('@')[0]||'Utente';await setDoc(doc(db,'users',user.uid),{name,email:user.email||'',displayName:name},{merge:true});}catch(_){}
+    startListeners();navHistory=['calendar'];showScreen('calendar',false);
+  }else{stopListeners();navHistory=['auth'];showScreen('auth',false);}
 });
 
-// ── Firestore listeners ────────────────────────────────────────
+// ── Firestore ──
 function startListeners(){
   stopListeners();
   unsubEvents=onSnapshot(query(collection(db,'events'),orderBy('date','asc')),snap=>{
-    allEvents=snap.docs.map(d=>({id:d.id,...d.data()}))
-      .sort((a,b)=>a.date===b.date?(a.time||'').localeCompare(b.time||''):a.date.localeCompare(b.date));
+    allEvents=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.date===b.date?(a.time||'').localeCompare(b.time||''):a.date.localeCompare(b.date));
     renderCalendar();renderEventList();renderFilters();
   });
   unsubCats=onSnapshot(doc(db,'config','categories'),snap=>{
     if(snap.exists()){
       const custom={};
-      Object.entries(snap.data()).forEach(([k,v])=>{
-        if(v&&v.label) custom[k]={label:v.label,emoji:v.emoji||'📌',colorHex:v.colorHex||'#7C3AED'};
-      });
-      allCategories={
-        cinema:{label:"Cinema",emoji:"🎬",colorHex:"#FF6B6B"},
-        musica:{label:"Musica",emoji:"🎵",colorHex:"#A78BFA"},
-        teatro:{label:"Teatro",emoji:"🎭",colorHex:"#FBBF24"},
-        natura:{label:"Natura",emoji:"🌿",colorHex:"#34D399"},
-        drink:{label:"Drink/Cibo",emoji:"🍹",colorHex:"#FB923C"},
-        ...custom
-      };
+      Object.entries(snap.data()).forEach(([k,v])=>{if(v&&v.label)custom[k]={label:v.label,emoji:v.emoji||'📌',colorHex:v.colorHex||'#7C3AED'};});
+      allCategories={cinema:{label:"Cinema",emoji:"🎬",colorHex:"#FF6B6B"},musica:{label:"Musica",emoji:"🎵",colorHex:"#A78BFA"},teatro:{label:"Teatro",emoji:"🎭",colorHex:"#FBBF24"},natura:{label:"Natura",emoji:"🌿",colorHex:"#34D399"},drink:{label:"Drink/Cibo",emoji:"🍹",colorHex:"#FB923C"},...custom};
     }
     renderFilters();renderCalendar();renderEventList();
   });
-  unsubUsers=onSnapshot(collection(db,'users'),snap=>{
-    allUsers=snap.docs.map(d=>({uid:d.id,...d.data()}));
-  });
+  unsubUsers=onSnapshot(collection(db,'users'),snap=>{allUsers=snap.docs.map(d=>({uid:d.id,...d.data()}));});
 }
-function stopListeners(){
-  if(unsubEvents){unsubEvents();unsubEvents=null;}
-  if(unsubCats){unsubCats();unsubCats=null;}
-  if(unsubUsers){unsubUsers();unsubUsers=null;}
-}
+function stopListeners(){[unsubEvents,unsubCats,unsubUsers].forEach(u=>{if(u)u();});unsubEvents=unsubCats=unsubUsers=null;}
 
-// ── Filters ────────────────────────────────────────────────────
+// ── Filters ──
 function renderFilters(){
-  const bar=document.getElementById('filters-bar');
-  if(!bar) return;
+  const bar=document.getElementById('filters-bar');if(!bar)return;
   const first=bar.firstElementChild;
-  bar.innerHTML='';
-  if(first) bar.appendChild(first);
+  bar.innerHTML='';if(first)bar.appendChild(first);
   Object.entries(allCategories).forEach(([key,cat])=>{
     const chip=document.createElement('div');
     chip.className='chip'+(activeFilters.has(key)?' active':'');
-    chip.dataset.filter=key;
-    chip.textContent=`${cat.emoji} ${cat.label}`;
-    chip.onclick=()=>toggleFilter(chip);
-    bar.appendChild(chip);
+    chip.dataset.filter=key;chip.textContent=`${cat.emoji} ${cat.label}`;
+    chip.onclick=()=>toggleFilter(chip);bar.appendChild(chip);
   });
-  // Sync partecipo chip
-  if(first) first.classList.toggle('active',activeFilters.has('__partecipo__'));
+  if(first)first.classList.toggle('active',activeFilters.has('__partecipo__'));
 }
 window.toggleFilter=function(el){
   const key=el.dataset.filter;
-  if(activeFilters.has(key)) activeFilters.delete(key); else activeFilters.add(key);
+  if(activeFilters.has(key))activeFilters.delete(key);else activeFilters.add(key);
   el.classList.toggle('active',activeFilters.has(key));
   renderEventList();
 };
-
 function filteredEvents(){
   const hasPart=activeFilters.has('__partecipo__');
   const cats=[...activeFilters].filter(k=>k!=='__partecipo__');
@@ -803,37 +623,47 @@ function filteredEvents(){
   });
 }
 
-// ── Calendar ────────────────────────────────────────────────────
-function renderCalendar(){
+// ── Calendar render with slide animation ──
+function animateCal(dir){
+  // dir: 1=forward(left slide), -1=back(right slide), 0=no anim
   const area=document.getElementById('cal-area');
-  if(!area) return;
+  if(!area||dir===0)return;
+  area.classList.remove('cal-slide-enter-left','cal-slide-enter-right');
+  void area.offsetWidth;// reflow
+  area.classList.add(dir>0?'cal-slide-enter-left':'cal-slide-enter-right');
+}
+
+function renderCalendar(dir=0){
+  const area=document.getElementById('cal-area');if(!area)return;
   if(calView==='month') renderMonthGrid(area);
   else if(calView==='week') renderWeekCol(area);
-  else area.innerHTML='';
+  else renderDayHeader(area);
   updatePeriodLabel();
+  if(dir!==0){
+    area.classList.remove('cal-slide-enter-left','cal-slide-enter-right');
+    void area.offsetWidth;
+    area.classList.add(dir>0?'cal-slide-enter-left':'cal-slide-enter-right');
+  }
 }
 
 function renderMonthGrid(area){
   const today=todayStr();
   const first=new Date(calYear,calMonth,1);
   const lastDay=new Date(calYear,calMonth+1,0).getDate();
-  let startDow=(first.getDay()+6)%7;
+  const startDow=(first.getDay()+6)%7;
   let html=`<div class="cal-header">`;
   ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'].forEach(d=>html+=`<div class="cal-header-day">${d}</div>`);
   html+=`</div><div class="cal-grid">`;
   const prevLast=new Date(calYear,calMonth,0).getDate();
   for(let i=0;i<startDow;i++){
-    const d=prevLast-startDow+1+i;
-    const m=calMonth===0?11:calMonth-1,y=calMonth===0?calYear-1:calYear;
+    const d=prevLast-startDow+1+i,m=calMonth===0?11:calMonth-1,y=calMonth===0?calYear-1:calYear;
     html+=calCell(dateStr(y,m,d),'other-month');
   }
   for(let d=1;d<=lastDay;d++){
     const ds=dateStr(calYear,calMonth,d);
-    const cls=(ds===today?'today':'')+(ds===selDate?' selected':'');
-    html+=calCell(ds,cls);
+    html+=calCell(ds,(ds===today?'today':'')+(ds===selDate?' selected':''));
   }
-  const total=startDow+lastDay;
-  const rem=total%7===0?0:7-(total%7);
+  const rem=(startDow+lastDay)%7===0?0:7-(startDow+lastDay)%7;
   for(let d=1;d<=rem;d++){
     const m=calMonth===11?0:calMonth+1,y=calMonth===11?calYear+1:calYear;
     html+=calCell(dateStr(y,m,d),'other-month');
@@ -841,20 +671,12 @@ function renderMonthGrid(area){
   html+=`</div>`;
   area.innerHTML=html;
 }
-function calCell(ds,extraCls=''){
+function calCell(ds,cls=''){
   const day=parseInt(ds.split('-')[2]);
-  const dots=eventDotsForDate(ds);
-  return `<div class="cal-cell ${extraCls}" onclick="selectDate('${ds}')">
-    <div class="cal-day-num">${day}</div>
-    <div class="cal-dots">${dots}</div>
-  </div>`;
-}
-function eventDotsForDate(ds){
-  return filteredEvents().filter(e=>e.date===ds).slice(0,4)
-    .map(e=>`<div class="cal-dot" style="background:${catColor(e.type)}"></div>`).join('');
+  const dots=filteredEvents().filter(e=>e.date===ds).slice(0,4).map(e=>`<div class="cal-dot" style="background:${catColor(e.type)}"></div>`).join('');
+  return`<div class="cal-cell ${cls}" onclick="selectDate('${ds}')"><div class="cal-day-num">${day}</div><div class="cal-dots">${dots}</div></div>`;
 }
 
-// ── Week view — vertical column ────────────────────────────────
 function renderWeekCol(area){
   if(!weekStart) weekStart=getWeekMonday(new Date());
   const today=todayStr();
@@ -864,193 +686,182 @@ function renderWeekCol(area){
     const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);
     const ds=dateToStr(d);
     const evs=filteredEvents().filter(e=>e.date===ds);
-    const cls=(ds===today?'today':'')+(ds===selDate?' selected':'');
-    const pillsHtml=evs.length>0
-      ? evs.slice(0,3).map(e=>
-          `<div class="week-row-event-pill" style="background:${catColor(e.type)}">
-            ${catEmoji(e.type)} ${escHtml(e.title||'Evento')}
-          </div>`).join('')
-        + (evs.length>3?`<div style="font-size:11px;color:var(--text-muted);padding-left:2px">+${evs.length-3} altri</div>`:'')
-      : `<div class="week-row-empty">Nessun evento</div>`;
-    html+=`<div class="week-row ${cls}" onclick="selectDate('${ds}')">
-      <div class="week-row-date">
-        <div class="week-row-dayname">${names[i]}</div>
-        <div class="week-row-daynum">${d.getDate()}</div>
-      </div>
-      <div class="week-row-events">${pillsHtml}</div>
+    const cls=(ds===today?' today':'')+(ds===selDate?' selected':'');
+    const pills=evs.slice(0,2).map(e=>`<div class="week-pill" style="background:${catColor(e.type)}">${catEmoji(e.type)} ${escHtml(e.title||'Evento')}</div>`).join('');
+    const more=evs.length>2?`<div class="week-more">+${evs.length-2}</div>`:'';
+    html+=`<div class="week-row${cls}" onclick="selectDate('${ds}')">
+      <div class="week-row-date"><div class="week-row-dayname">${names[i]}</div><div class="week-row-daynum">${d.getDate()}</div></div>
+      <div class="week-row-events">${pills}${more}${evs.length===0?'<div class="week-more" style="color:var(--text-empty)">—</div>':''}</div>
     </div>`;
   }
   html+='</div>';
   area.innerHTML=html;
 }
 
+function renderDayHeader(area){
+  const ds=selDate||todayStr();
+  area.innerHTML=`<div class="day-header">📋 ${formatDate(ds)}</div>`;
+}
+
 function updatePeriodLabel(){
-  const MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
-                'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  const MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
   let label='';
   if(calView==='month') label=`${MONTHS[calMonth]} ${calYear}`;
   else if(calView==='week'){
-    if(!weekStart) weekStart=getWeekMonday(new Date());
+    if(!weekStart)weekStart=getWeekMonday(new Date());
     const end=new Date(weekStart);end.setDate(weekStart.getDate()+6);
     label=`${weekStart.getDate()} – ${end.getDate()} ${MONTHS[end.getMonth()]}`;
-  } else {
-    label=formatDateShort(selDate||todayStr());
-  }
-  const el=document.getElementById('period-label');
-  if(el) el.textContent=label;
+  } else label=formatDateShort(selDate||todayStr());
+  const el=document.getElementById('period-label');if(el)el.textContent=label;
 }
 
-// ── Event list ─────────────────────────────────────────────────
+// ── Event list ──
 function renderEventList(){
-  const el=document.getElementById('event-list');
-  if(!el) return;
+  const el=document.getElementById('event-list');if(!el)return;
   let evs=filteredEvents();
+  const ds=selDate||todayStr();
   if(calView==='day'){
-    evs=evs.filter(e=>e.date===(selDate||todayStr()));
+    evs=evs.filter(e=>e.date===ds);
   } else if(calView==='week'){
-    if(!weekStart) weekStart=getWeekMonday(new Date());
+    if(!weekStart)weekStart=getWeekMonday(new Date());
     const endD=new Date(weekStart);endD.setDate(weekStart.getDate()+6);
-    const s=dateToStr(weekStart),e2=dateToStr(endD);
-    evs=evs.filter(e=>e.date>=s&&e.date<=e2);
-    if(selDate) evs=evs.filter(e=>e.date===selDate);
+    evs=evs.filter(e=>e.date>=dateToStr(weekStart)&&e.date<=dateToStr(endD));
+    if(selDate)evs=evs.filter(e=>e.date===selDate);
   } else {
-    if(selDate) evs=evs.filter(e=>e.date===selDate);
+    if(selDate)evs=evs.filter(e=>e.date===selDate);
   }
-
   if(evs.length===0){
-    el.innerHTML=`<div class="empty-state">
-      <div class="empty-state-icon">📅</div>
-      <div style="font-size:16px;font-weight:600;color:var(--text-sub)">Nessun evento</div>
-      <div style="font-size:14px;color:var(--text-empty)">Tocca + per aggiungere un evento</div>
-    </div>`;
+    el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">🗓</div><div style="font-size:15px;font-weight:600;color:var(--text-sub)">Nessun evento</div><div style="font-size:13px;color:var(--text-empty)">Tocca + per aggiungere</div></div>`;
     return;
   }
-
   const byDate={};
-  evs.forEach(e=>{if(!byDate[e.date]) byDate[e.date]=[];byDate[e.date].push(e);});
+  evs.forEach(e=>{if(!byDate[e.date])byDate[e.date]=[];byDate[e.date].push(e);});
   let html='';
   Object.keys(byDate).sort().forEach(date=>{
     html+=`<div class="date-section-label">${formatDate(date)}</div>`;
     byDate[date].forEach(e=>{
-      const meAttends=currentUser&&(e.attendeeUids||[]).includes(currentUser.uid);
+      const me=currentUser&&(e.attendeeUids||[]).includes(currentUser.uid);
       const color=catColor(e.type);
-      const emoji=catEmoji(e.type);
-      const avatars=(e.attendees||[]).slice(0,3).map((n,i)=>
-        `<div class="attendee-avatar" style="z-index:${10-i}">${n.charAt(0).toUpperCase()}</div>`).join('');
+      const avatars=(e.attendees||[]).slice(0,3).map((n,i)=>`<div class="attendee-avatar" style="z-index:${10-i}">${n.charAt(0).toUpperCase()}</div>`).join('');
       const attCount=(e.attendees||[]).length;
       html+=`<div class="event-card" onclick="openDetail('${e.id}')">
         <div class="event-card-top">
-          <div class="event-type-badge" style="background:${color}22">${emoji}</div>
+          <div class="event-type-badge" style="background:${color}22">${catEmoji(e.type)}</div>
           <div class="event-card-info">
             <div class="event-title">${escHtml(e.title||'Senza titolo')}</div>
             <div class="event-meta">${e.time||''}${e.time&&e.place?' · ':''}${escHtml(e.place||'')}</div>
           </div>
-          ${meAttends?`<div class="attend-me-dot" title="Partecipo"></div>`:''}
+          ${me?'<div class="attend-me-dot"></div>':''}
         </div>
-        ${attCount>0?`<div class="event-attendees">
-          <div style="display:flex">${avatars}</div>
-          <span>${attCount} partecipant${attCount===1?'e':'i'}</span>
-        </div>`:''}
+        ${attCount>0?`<div class="event-attendees"><div style="display:flex">${avatars}</div><span>${attCount} partecipant${attCount===1?'e':'i'}</span></div>`:''}
       </div>`;
     });
   });
   el.innerHTML=html;
 }
 
-// ── Calendar nav ───────────────────────────────────────────────
+// ── Calendar nav + transitions ──
 window.selectDate=function(ds){
   selDate=ds;
-  const d=parseDate(ds);
-  calYear=d.getFullYear();calMonth=d.getMonth();
-  renderCalendar();renderEventList();
+  const d=parseDate(ds);calYear=d.getFullYear();calMonth=d.getMonth();
+  renderCalendar(0);renderEventList();
 };
+
 window.navPeriod=function(dir){
   if(calView==='month'){
-    calMonth+=dir;
-    if(calMonth<0){calMonth=11;calYear--;}
-    if(calMonth>11){calMonth=0;calYear++;}
+    calMonth+=dir;if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;}
   } else if(calView==='week'){
-    if(!weekStart) weekStart=getWeekMonday(new Date());
-    weekStart.setDate(weekStart.getDate()+dir*7);
+    if(!weekStart)weekStart=getWeekMonday(new Date());
+    weekStart=new Date(weekStart);weekStart.setDate(weekStart.getDate()+dir*7);
   } else {
-    const d=parseDate(selDate||todayStr());
-    d.setDate(d.getDate()+dir);
-    selDate=dateToStr(d);
+    const d=parseDate(selDate||todayStr());d.setDate(d.getDate()+dir);selDate=dateToStr(d);
   }
-  renderCalendar();renderEventList();
+  renderCalendar(dir);renderEventList();
+  flashArrow(dir);
 };
-window.goToday=function(){
-  const now=new Date();
-  calYear=now.getFullYear();calMonth=now.getMonth();
-  selDate=todayStr();
-  weekStart=getWeekMonday(now);
-  renderCalendar();renderEventList();
-};
+
+function flashArrow(dir){
+  const el=document.getElementById(dir>0?'swipe-right':'swipe-left');
+  if(!el)return;
+  el.classList.add('show');setTimeout(()=>el.classList.remove('show'),400);
+}
+
+// Double-tap on tab = go to today for that view
 window.setView=function(v,btn){
+  const now=Date.now();
+  const doubleTap=(now-lastTabTap[v])<400;
+  lastTabTap[v]=now;
+
+  const prevView=calView;
   calView=v;
   document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
-  if(v==='week') weekStart=getWeekMonday(selDate?parseDate(selDate):new Date());
-  renderCalendar();renderEventList();
+
+  if(doubleTap){
+    // Double tap: center on today
+    const nd=new Date();
+    calYear=nd.getFullYear();calMonth=nd.getMonth();
+    selDate=todayStr();weekStart=getWeekMonday(nd);
+    showToast('Vai a oggi');
+  } else if(v==='week'){
+    weekStart=getWeekMonday(selDate?parseDate(selDate):new Date());
+  }
+  // Animate: if switching view, fade; if same view double-tap, no dir anim
+  renderCalendar(doubleTap?0:0);renderEventList();
 };
 
-// ── Event Detail ───────────────────────────────────────────────
+window.goToday=function(){
+  const nd=new Date();
+  calYear=nd.getFullYear();calMonth=nd.getMonth();
+  selDate=todayStr();weekStart=getWeekMonday(nd);
+  renderCalendar(0);renderEventList();
+  showToast('Oggi');
+};
+
+// ── Touch swipe on cal-wrapper ──
+(function setupSwipe(){
+  const wrapper=document.getElementById('cal-wrapper');
+  if(!wrapper)return;
+  let startX=0,startY=0,moved=false;
+  wrapper.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY;moved=false;},{passive:true});
+  wrapper.addEventListener('touchmove',e=>{
+    const dx=Math.abs(e.touches[0].clientX-startX),dy=Math.abs(e.touches[0].clientY-startY);
+    if(dx>dy&&dx>10){moved=true;}
+  },{passive:true});
+  wrapper.addEventListener('touchend',e=>{
+    if(!moved)return;
+    const dx=e.changedTouches[0].clientX-startX;
+    if(Math.abs(dx)>48) navPeriod(dx<0?1:-1);
+    moved=false;
+  },{passive:true});
+})();
+
+// ── Event Detail ──
 window.openDetail=function(eventId){
-  const event=allEvents.find(e=>e.id===eventId);
-  if(!event) return;
-  renderDetail(event);
-  showScreen('detail');
+  const event=allEvents.find(e=>e.id===eventId);if(!event)return;
+  renderDetail(event);showScreen('detail');
 };
 function renderDetail(event){
-  const meAttends=currentUser&&(event.attendeeUids||[]).includes(currentUser.uid);
+  const me=currentUser&&(event.attendeeUids||[]).includes(currentUser.uid);
   const color=catColor(event.type);
-  const mapsUrl=event.place
-    ?`https://maps.apple.com/?q=${encodeURIComponent(event.place+', Roma')}`
-    :null;
-  const attNames=(event.attendees||[]).join(', ')||'Nessuno';
+  const mapsUrl=event.place?`https://maps.apple.com/?q=${encodeURIComponent(event.place+', Roma')}`:null;
   document.getElementById('detail-content').innerHTML=`
   <div class="detail-hero">
     <div class="detail-hero-top">
       <div class="detail-type-icon" style="background:${color}22">${catEmoji(event.type)}</div>
-      <div>
-        <div class="detail-title">${escHtml(event.title||'Senza titolo')}</div>
-        <div class="detail-inserter">${catLabel(event.type)} · suggerito da ${escHtml(event.insertedBy||'')}</div>
-      </div>
+      <div><div class="detail-title">${escHtml(event.title||'Senza titolo')}</div>
+      <div class="detail-inserter">${catLabel(event.type)} · da ${escHtml(event.insertedBy||'')}</div></div>
     </div>
   </div>
   <div class="detail-body">
-    <div class="detail-row">
-      <div class="detail-row-icon">📅</div>
-      <div class="detail-row-content">
-        <div class="detail-row-label">Data e ora</div>
-        <div class="detail-row-value">${formatDate(event.date)}${event.time?' alle '+event.time:''}</div>
-      </div>
-    </div>
-    ${event.place?`<div class="detail-row">
-      <div class="detail-row-icon">📍</div>
-      <div class="detail-row-content">
-        <div class="detail-row-label">Luogo</div>
-        <div class="detail-row-value">${escHtml(event.place)}</div>
-      </div>
-    </div>`:''}
-    <div class="detail-row">
-      <div class="detail-row-icon">👥</div>
-      <div class="detail-row-content">
-        <div class="detail-row-label">Partecipanti (${(event.attendees||[]).length})</div>
-        <div class="detail-row-value">${escHtml(attNames)}</div>
-      </div>
-    </div>
-    ${event.description?`<div class="detail-row">
-      <div class="detail-row-icon">📝</div>
-      <div class="detail-row-content">
-        <div class="detail-row-label">Descrizione</div>
-        <div class="detail-row-value" style="white-space:pre-wrap">${escHtml(event.description)}</div>
-      </div>
-    </div>`:''}
+    <div class="detail-row"><div class="detail-row-icon">📅</div><div class="detail-row-content"><div class="detail-row-label">Data e ora</div><div class="detail-row-value">${formatDate(event.date)}${event.time?' alle '+event.time:''}</div></div></div>
+    ${event.place?`<div class="detail-row"><div class="detail-row-icon">📍</div><div class="detail-row-content"><div class="detail-row-label">Luogo</div><div class="detail-row-value">${escHtml(event.place)}</div></div></div>`:''}
+    <div class="detail-row"><div class="detail-row-icon">👥</div><div class="detail-row-content"><div class="detail-row-label">Partecipanti (${(event.attendees||[]).length})</div><div class="detail-row-value">${escHtml((event.attendees||[]).join(', ')||'Nessuno')}</div></div></div>
+    ${event.description?`<div class="detail-row"><div class="detail-row-icon">📝</div><div class="detail-row-content"><div class="detail-row-label">Descrizione</div><div class="detail-row-value" style="white-space:pre-wrap">${escHtml(event.description)}</div></div></div>`:''}
   </div>
   ${mapsUrl?`<a href="${mapsUrl}" target="_blank" class="map-preview">🗺️ Apri in Mappe: ${escHtml(event.place)}</a>`:''}
-  <button class="attend-btn ${meAttends?'attending':'not-attending'}" onclick="toggleAttend('${event.id}')">
-    ${meAttends?'✅ Partecipo · tocca per rimuoverti':'➕ Partecipa'}
+  <button class="attend-btn ${me?'attending':'not-attending'}" onclick="toggleAttend('${event.id}')">
+    ${me?'✅ Partecipo · tocca per rimuoverti':'➕ Partecipa'}
   </button>
   <div class="detail-actions">
     <button class="btn-outline" onclick="openEventForm('${event.id}',null)">✏️ Modifica</button>
@@ -1060,29 +871,20 @@ function renderDetail(event){
 
 window.toggleAttend=async function(eventId){
   if(!currentUser){showToast('Accedi per partecipare');return;}
-  const event=allEvents.find(e=>e.id===eventId);
-  if(!event) return;
-  const uid=currentUser.uid;
-  const name=currentUser.displayName||currentUser.email||'Utente';
+  const event=allEvents.find(e=>e.id===eventId);if(!event)return;
+  const uid=currentUser.uid,name=currentUser.displayName||currentUser.email||'Utente';
   const isIn=(event.attendeeUids||[]).includes(uid);
   const newUids=isIn?(event.attendeeUids||[]).filter(u=>u!==uid):[...(event.attendeeUids||[]),uid];
   const newNames=isIn?(event.attendees||[]).filter(n=>n!==name):[...(event.attendees||[]),name];
   try{
     await updateDoc(doc(db,'events',eventId),{attendeeUids:newUids,attendees:newNames});
     showToast(isIn?'Rimosso dalla lista':'Aggiunto ai partecipanti');
-    // refresh detail
-    const updated={...event,attendeeUids:newUids,attendees:newNames};
-    renderDetail(updated);
+    renderDetail({...event,attendeeUids:newUids,attendees:newNames});
   }catch(e){showToast('Errore: '+e.message);}
 };
 
 window.confirmDelete=function(eventId){
-  showModal(`<div class="modal-title">Elimina evento?</div>
-    <p style="color:var(--text-sub);font-size:15px;margin-bottom:4px">Questa azione è irreversibile.</p>
-    <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeModal()">Annulla</button>
-      <button class="btn-primary-sm" style="background:#dc2626" onclick="deleteEventNow('${eventId}')">Elimina</button>
-    </div>`);
+  showModal(`<div class="modal-title">Elimina evento?</div><p style="color:var(--text-sub);font-size:14px;margin-bottom:4px">Questa azione è irreversibile.</p><div class="modal-actions"><button class="btn-secondary" onclick="closeModal()">Annulla</button><button class="btn-primary-sm" style="background:#dc2626" onclick="deleteEventNow('${eventId}')">Elimina</button></div>`);
 };
 window.deleteEventNow=async function(eventId){
   closeModal();
@@ -1090,64 +892,30 @@ window.deleteEventNow=async function(eventId){
   catch(e){showToast('Errore: '+e.message);}
 };
 
-// ── Event Form ─────────────────────────────────────────────────
+// ── Event Form ──
 window.openEventForm=function(eventId,prefillDate){
   editingEventId=eventId||null;
   const existing=eventId?allEvents.find(e=>e.id===eventId):null;
   document.getElementById('form-title').textContent=existing?'Modifica evento':'Nuovo evento';
   const defaultDate=prefillDate||selDate||todayStr();
-  const cats=Object.entries(allCategories).map(([key,cat])=>`
-    <div class="type-option${(existing?.type||'cinema')===key?' selected':''}"
-      data-type="${key}" onclick="selectType(this)">
-      <span style="font-size:20px">${cat.emoji}</span>
-      <span style="color:${cat.colorHex}">${cat.label}</span>
-    </div>`).join('');
+  const cats=Object.entries(allCategories).map(([key,cat])=>`<div class="type-option${(existing?.type||'cinema')===key?' selected':''}" data-type="${key}" onclick="selectType(this)"><span style="font-size:19px">${cat.emoji}</span><span style="color:${cat.colorHex}">${cat.label}</span></div>`).join('');
   const userRows=allUsers.map(u=>{
     const checked=(existing?.attendeeUids||[]).includes(u.uid);
-    const safeName=escHtml(u.displayName||u.name||'Utente');
-    return `<div class="attendee-row" data-uid="${u.uid}" data-name="${safeName}" onclick="toggleFormAttendee(this)">
-      <div class="attendee-check ${checked?'checked':''}">✓</div>
-      <div class="attendee-name">${safeName}</div>
-    </div>`;
+    const sn=escHtml(u.displayName||u.name||'Utente');
+    return`<div class="attendee-row" data-uid="${u.uid}" data-name="${sn}" onclick="toggleFormAttendee(this)"><div class="attendee-check ${checked?'checked':''}">✓</div><div class="attendee-name">${sn}</div></div>`;
   }).join('');
   document.getElementById('form-body').innerHTML=`
-    <div class="form-section">
-      <div class="form-label">Titolo</div>
-      <input id="f-title" class="form-field" type="text" placeholder="Nome evento" value="${escHtml(existing?.title||'')}" autocomplete="off"/>
-    </div>
-    <div class="form-section">
-      <div class="form-label">Data</div>
-      <input id="f-date" class="form-field" type="date" value="${existing?.date||defaultDate}"/>
-    </div>
-    <div class="form-section">
-      <div class="form-label">Ora (opzionale)</div>
-      <input id="f-time" class="form-field" type="time" value="${existing?.time||''}"/>
-    </div>
-    <div class="form-section">
-      <div class="form-label">Tipo</div>
-      <div class="type-grid">${cats}</div>
-    </div>
-    <div class="form-section">
-      <div class="form-label">Luogo</div>
-      <input id="f-place" class="form-field" type="text" placeholder="Via, Piazza, Nome locale…" value="${escHtml(existing?.place||'')}" autocomplete="street-address"/>
-    </div>
-    <div class="form-section">
-      <div class="form-label">Descrizione</div>
-      <textarea id="f-desc" class="form-field" rows="3" placeholder="Note, link, dettagli…">${escHtml(existing?.description||'')}</textarea>
-    </div>
-    <div class="form-section">
-      <div class="form-label">Partecipanti</div>
-      <div class="attendee-list" id="attendee-list">${userRows}</div>
-    </div>`;
+    <div class="form-section"><div class="form-label">Titolo</div><input id="f-title" class="form-field" type="text" placeholder="Nome evento" value="${escHtml(existing?.title||'')}" autocomplete="off"/></div>
+    <div class="form-section"><div class="form-label">Data</div><input id="f-date" class="form-field" type="date" value="${existing?.date||defaultDate}"/></div>
+    <div class="form-section"><div class="form-label">Ora (opzionale)</div><input id="f-time" class="form-field" type="time" value="${existing?.time||''}"/></div>
+    <div class="form-section"><div class="form-label">Tipo</div><div class="type-grid">${cats}</div></div>
+    <div class="form-section"><div class="form-label">Luogo</div><input id="f-place" class="form-field" type="text" placeholder="Via, Piazza, Nome locale…" value="${escHtml(existing?.place||'')}"/></div>
+    <div class="form-section"><div class="form-label">Descrizione</div><textarea id="f-desc" class="form-field" rows="3" placeholder="Note, link, dettagli…">${escHtml(existing?.description||'')}</textarea></div>
+    <div class="form-section"><div class="form-label">Partecipanti</div><div class="attendee-list" id="attendee-list">${userRows}</div></div>`;
   showScreen('form');
 };
-window.selectType=function(el){
-  document.querySelectorAll('.type-option').forEach(o=>o.classList.remove('selected'));
-  el.classList.add('selected');
-};
-window.toggleFormAttendee=function(row){
-  row.querySelector('.attendee-check').classList.toggle('checked');
-};
+window.selectType=function(el){document.querySelectorAll('.type-option').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');};
+window.toggleFormAttendee=function(row){row.querySelector('.attendee-check').classList.toggle('checked');};
 window.saveEventForm=async function(){
   const title=document.getElementById('f-title')?.value.trim();
   const date=document.getElementById('f-date')?.value;
@@ -1160,17 +928,16 @@ window.saveEventForm=async function(){
   const attendeeUids=[],attendeeNames=[];
   document.querySelectorAll('#attendee-list .attendee-row').forEach(row=>{
     if(row.querySelector('.attendee-check')?.classList.contains('checked')){
-      attendeeUids.push(row.dataset.uid);
-      attendeeNames.push(row.dataset.name);
+      attendeeUids.push(row.dataset.uid);attendeeNames.push(row.dataset.name);
     }
   });
   const data={title,date,time,type,place,description:desc,attendees:attendeeNames,attendeeUids};
   try{
     if(editingEventId){
-      const existing=allEvents.find(e=>e.id===editingEventId);
-      await setDoc(doc(db,'events',editingEventId),{...existing,...data});
+      const ex=allEvents.find(e=>e.id===editingEventId);
+      await setDoc(doc(db,'events',editingEventId),{...ex,...data});
       showToast('Evento aggiornato');
-    } else {
+    }else{
       const name=currentUser?.displayName||currentUser?.email||'Utente';
       await addDoc(collection(db,'events'),{...data,insertedBy:name,insertedByUid:currentUser.uid});
       showToast('Evento aggiunto');
@@ -1179,99 +946,30 @@ window.saveEventForm=async function(){
   }catch(e){showToast('Errore: '+e.message);}
 };
 
-// ── Settings ───────────────────────────────────────────────────
+// ── Settings ──
 function renderSettings(){
-  const body=document.getElementById('settings-body');
-  if(!body) return;
+  const body=document.getElementById('settings-body');if(!body)return;
   const user=currentUser;
-  const catChips=Object.entries(allCategories).map(([key,cat])=>
-    `<div class="cat-badge" style="background:${cat.colorHex}" onclick="openEditCategory('${key}')">
-      ${cat.emoji} ${cat.label}
-    </div>`).join('');
-  const userRows=allUsers.map(u=>{
-    const isMe=u.uid===user?.uid;
-    return `<div class="user-row">
-      <div class="user-avatar">${(u.displayName||u.name||'?').charAt(0).toUpperCase()}</div>
-      <div class="user-info">
-        <div class="user-name">${escHtml(u.displayName||u.name||'Utente')}</div>
-        <div class="user-email">${escHtml(u.email||'')}</div>
-      </div>
-      ${isMe?`<div class="me-badge">tu</div>`:''}
-    </div>`;
-  }).join('');
+  const catChips=Object.entries(allCategories).map(([key,cat])=>`<div class="cat-badge" style="background:${cat.colorHex}" onclick="openEditCategory('${key}')">${cat.emoji} ${cat.label}</div>`).join('');
+  const userRows=allUsers.map(u=>{const isMe=u.uid===user?.uid;return`<div class="user-row"><div class="user-avatar">${(u.displayName||u.name||'?').charAt(0).toUpperCase()}</div><div class="user-info"><div class="user-name">${escHtml(u.displayName||u.name||'Utente')}</div><div class="user-email">${escHtml(u.email||'')}</div></div>${isMe?'<div class="me-badge">tu</div>':''}</div>`;}).join('');
   body.innerHTML=`
-    <div class="settings-section">
-      <div class="settings-section-title">Profilo</div>
-      <div class="settings-card">
-        <div class="user-row">
-          <div class="user-avatar" style="font-size:22px">👩‍🦰</div>
-          <div class="user-info">
-            <div class="user-name">${escHtml(user?.displayName||'Utente')}</div>
-            <div class="user-email">${escHtml(user?.email||'')}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="settings-section">
-      <div class="settings-section-title">Aspetto</div>
-      <div class="settings-card">
-        <div class="settings-row">
-          <div class="settings-row-info">
-            <div class="settings-row-label">Tema scuro</div>
-            <div class="settings-row-sub">Di default è attivo il tema chiaro</div>
-          </div>
-          <button class="toggle ${isDark?'on':''}" id="theme-toggle" onclick="toggleTheme()"></button>
-        </div>
-      </div>
-    </div>
-    <div class="settings-section">
-      <div class="settings-section-title">Categorie</div>
-      <div class="settings-card" style="padding:14px 16px">
-        <div class="cat-list">${catChips}</div>
-        <button class="btn-primary" style="margin-top:14px;font-size:14px;padding:11px" onclick="openAddCategory()">+ Nuova categoria</button>
-      </div>
-    </div>
-    <div class="settings-section">
-      <div class="settings-section-title">Utenti del gruppo</div>
-      <div class="settings-card">${userRows||'<div style="padding:16px;color:var(--text-muted);font-size:14px">Nessun utente</div>'}</div>
-    </div>
-    <div class="settings-section">
-      <div class="settings-card">
-        <div class="settings-row" onclick="confirmLogout()" style="cursor:pointer">
-          <div class="settings-row-label" style="color:#dc2626">🚪 Esci dall'account</div>
-        </div>
-      </div>
-    </div>`;
+    <div class="settings-section"><div class="settings-section-title">Profilo</div><div class="settings-card"><div class="user-row"><div class="user-avatar" style="font-size:20px">👩‍🦰</div><div class="user-info"><div class="user-name">${escHtml(user?.displayName||'Utente')}</div><div class="user-email">${escHtml(user?.email||'')}</div></div></div></div></div>
+    <div class="settings-section"><div class="settings-section-title">Aspetto</div><div class="settings-card"><div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">Tema scuro</div><div class="settings-row-sub">Di default è attivo il tema chiaro</div></div><button class="toggle ${isDark?'on':''}" id="theme-toggle" onclick="toggleTheme()"></button></div></div></div>
+    <div class="settings-section"><div class="settings-section-title">Categorie</div><div class="settings-card" style="padding:13px 14px"><div class="cat-list">${catChips}</div><button class="btn-primary" style="margin-top:12px;font-size:13px;padding:10px" onclick="openAddCategory()">+ Nuova categoria</button></div></div>
+    <div class="settings-section"><div class="settings-section-title">Utenti del gruppo</div><div class="settings-card">${userRows||'<div style="padding:14px;color:var(--text-muted);font-size:13px">Nessun utente</div>'}</div></div>
+    <div class="settings-section"><div class="settings-card"><div class="settings-row" onclick="confirmLogout()" style="cursor:pointer"><div class="settings-row-label" style="color:#dc2626">🚪 Esci dall\'account</div></div></div></div>`;
 }
 
 window.toggleTheme=function(){
-  isDark=!isDark;
-  document.body.classList.toggle('dark',isDark);
-  const t=document.getElementById('theme-toggle');
-  if(t) t.classList.toggle('on',isDark);
+  isDark=!isDark;document.body.classList.toggle('dark',isDark);
+  const t=document.getElementById('theme-toggle');if(t)t.classList.toggle('on',isDark);
   localStorage.setItem('strega_dark',isDark?'1':'0');
 };
-window.confirmLogout=function(){
-  showModal(`<div class="modal-title">Esci dall'account?</div>
-    <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeModal()">Annulla</button>
-      <button class="btn-primary-sm" style="background:#dc2626" onclick="doLogout()">Esci</button>
-    </div>`);
-};
+window.confirmLogout=function(){showModal(`<div class="modal-title">Esci dall'account?</div><div class="modal-actions"><button class="btn-secondary" onclick="closeModal()">Annulla</button><button class="btn-primary-sm" style="background:#dc2626" onclick="doLogout()">Esci</button></div>`);};
 window.doLogout=async function(){closeModal();await signOut(auth);navHistory=['auth'];};
 
-// ── Category management ────────────────────────────────────────
 window.openAddCategory=function(){
-  showModal(`<div class="modal-title">Nuova categoria</div>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <input id="nc-label" class="form-field" placeholder="Nome (es. Sport)" autocomplete="off"/>
-      <input id="nc-emoji" class="form-field" placeholder="Emoji (es. ⚽)" autocomplete="off" maxlength="2"/>
-      <input id="nc-color" class="form-field" type="color" value="#3B82F6" style="height:48px;cursor:pointer"/>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeModal()">Annulla</button>
-      <button class="btn-primary-sm" onclick="saveNewCategory()">Salva</button>
-    </div>`);
+  showModal(`<div class="modal-title">Nuova categoria</div><div style="display:flex;flex-direction:column;gap:11px"><input id="nc-label" class="form-field" placeholder="Nome (es. Sport)" autocomplete="off"/><input id="nc-emoji" class="form-field" placeholder="Emoji (es. ⚽)" maxlength="2"/><input id="nc-color" class="form-field" type="color" value="#3B82F6" style="height:46px;cursor:pointer"/></div><div class="modal-actions"><button class="btn-secondary" onclick="closeModal()">Annulla</button><button class="btn-primary-sm" onclick="saveNewCategory()">Salva</button></div>`);
 };
 window.saveNewCategory=async function(){
   const label=document.getElementById('nc-label')?.value.trim();
@@ -1279,77 +977,42 @@ window.saveNewCategory=async function(){
   const colorHex=document.getElementById('nc-color')?.value||'#3B82F6';
   if(!label){showToast('Inserisci un nome');return;}
   const key=label.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-  try{
-    await setDoc(doc(db,'config','categories'),{[key]:{label,emoji,colorHex}},{merge:true});
-    showToast('Categoria aggiunta');closeModal();
-  }catch(e){showToast('Errore: '+e.message);}
+  try{await setDoc(doc(db,'config','categories'),{[key]:{label,emoji,colorHex}},{merge:true});showToast('Categoria aggiunta');closeModal();}
+  catch(e){showToast('Errore: '+e.message);}
 };
 window.openEditCategory=function(key){
-  const cat=allCategories[key];if(!cat) return;
+  const cat=allCategories[key];if(!cat)return;
   const isDefault=['cinema','musica','teatro','natura','drink'].includes(key);
-  showModal(`<div class="modal-title">Modifica: ${cat.emoji} ${cat.label}</div>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <input id="ec-label" class="form-field" value="${escHtml(cat.label)}" placeholder="Nome" ${isDefault?'disabled':''}/>
-      <input id="ec-emoji" class="form-field" value="${escHtml(cat.emoji)}" placeholder="Emoji" maxlength="2"/>
-      <input id="ec-color" class="form-field" type="color" value="${cat.colorHex}" style="height:48px;cursor:pointer"/>
-    </div>
-    <div class="modal-actions">
-      ${!isDefault?`<button class="btn-secondary" style="border-color:#dc2626;color:#dc2626" onclick="deleteCategoryConfirm('${key}')">Elimina</button>`:'<div style="flex:1"></div>'}
-      <button class="btn-secondary" onclick="closeModal()">Annulla</button>
-      <button class="btn-primary-sm" onclick="saveEditCategory('${key}','${isDefault}')">Salva</button>
-    </div>`);
+  showModal(`<div class="modal-title">Modifica: ${cat.emoji} ${cat.label}</div><div style="display:flex;flex-direction:column;gap:11px"><input id="ec-label" class="form-field" value="${escHtml(cat.label)}" placeholder="Nome" ${isDefault?'disabled':''}/><input id="ec-emoji" class="form-field" value="${escHtml(cat.emoji)}" placeholder="Emoji" maxlength="2"/><input id="ec-color" class="form-field" type="color" value="${cat.colorHex}" style="height:46px;cursor:pointer"/></div><div class="modal-actions">${!isDefault?`<button class="btn-secondary" style="border-color:#dc2626;color:#dc2626" onclick="deleteCategoryConfirm('${key}')">Elimina</button>`:'<div style="flex:1"></div>'}<button class="btn-secondary" onclick="closeModal()">Annulla</button><button class="btn-primary-sm" onclick="saveEditCategory('${key}','${isDefault}')">Salva</button></div>`);
 };
 window.saveEditCategory=async function(key,isDefault){
   const emoji=document.getElementById('ec-emoji')?.value.trim()||'📌';
   const colorHex=document.getElementById('ec-color')?.value||'#7C3AED';
-  const label=isDefault==='true'
-    ?allCategories[key].label
-    :(document.getElementById('ec-label')?.value.trim()||allCategories[key].label);
-  try{
-    await setDoc(doc(db,'config','categories'),{[key]:{label,emoji,colorHex}},{merge:true});
-    showToast('Categoria aggiornata');closeModal();
-  }catch(e){showToast('Errore: '+e.message);}
+  const label=isDefault==='true'?allCategories[key].label:(document.getElementById('ec-label')?.value.trim()||allCategories[key].label);
+  try{await setDoc(doc(db,'config','categories'),{[key]:{label,emoji,colorHex}},{merge:true});showToast('Categoria aggiornata');closeModal();}
+  catch(e){showToast('Errore: '+e.message);}
 };
 window.deleteCategoryConfirm=function(key){
   const cat=allCategories[key];
-  showModal(`<div class="modal-title">Elimina "${cat?.label}"?</div>
-    <p style="color:var(--text-sub);font-size:14px;margin-bottom:8px">Cosa fare con gli eventi in questa categoria?</p>
-    <div class="modal-actions" style="flex-direction:column;gap:8px">
-      <button class="btn-primary-sm" style="background:#dc2626" onclick="deleteCategoryNow('${key}',true,null)">Elimina anche gli eventi</button>
-      <button class="btn-primary-sm" onclick="deleteCategoryNow('${key}',false,'cinema')">Sposta in Cinema</button>
-      <button class="btn-secondary" onclick="closeModal()">Annulla</button>
-    </div>`);
+  showModal(`<div class="modal-title">Elimina "${cat?.label}"?</div><p style="color:var(--text-sub);font-size:13px;margin-bottom:7px">Cosa fare con gli eventi in questa categoria?</p><div class="modal-actions" style="flex-direction:column;gap:7px"><button class="btn-primary-sm" style="background:#dc2626" onclick="deleteCategoryNow('${key}',true,null)">Elimina anche gli eventi</button><button class="btn-primary-sm" onclick="deleteCategoryNow('${key}',false,'cinema')">Sposta in Cinema</button><button class="btn-secondary" onclick="closeModal()">Annulla</button></div>`);
 };
 window.deleteCategoryNow=async function(key,deleteEvs,reassignTo){
   closeModal();
   try{
     await updateDoc(doc(db,'config','categories'),{[key]:deleteField()});
-    if(deleteEvs){
-      await Promise.all(allEvents.filter(e=>e.type===key).map(e=>deleteDoc(doc(db,'events',e.id))));
-    } else if(reassignTo){
-      await Promise.all(allEvents.filter(e=>e.type===key).map(e=>updateDoc(doc(db,'events',e.id),{type:reassignTo})));
-    }
+    if(deleteEvs)await Promise.all(allEvents.filter(e=>e.type===key).map(e=>deleteDoc(doc(db,'events',e.id))));
+    else if(reassignTo)await Promise.all(allEvents.filter(e=>e.type===key).map(e=>updateDoc(doc(db,'events',e.id),{type:reassignTo})));
     showToast('Categoria eliminata');
   }catch(e){showToast('Errore: '+e.message);}
 };
 
-// ── Modal ──────────────────────────────────────────────────────
-window.showModal=function(html){
-  document.getElementById('modal-content').innerHTML=html;
-  document.getElementById('modal-overlay').classList.add('open');
-};
-window.closeModal=function(e){
-  if(e&&e.target!==document.getElementById('modal-overlay')) return;
-  document.getElementById('modal-overlay').classList.remove('open');
-};
+window.showModal=function(html){document.getElementById('modal-content').innerHTML=html;document.getElementById('modal-overlay').classList.add('open');};
+window.closeModal=function(e){if(e&&e.target!==document.getElementById('modal-overlay'))return;document.getElementById('modal-overlay').classList.remove('open');};
 
-// ── Init ───────────────────────────────────────────────────────
-(function init(){
-  // Light by default; activate dark only if explicitly saved
-  const stored=localStorage.getItem('strega_dark');
-  if(stored==='1'){isDark=true;document.body.classList.add('dark');}
-  selDate=todayStr();
-  weekStart=getWeekMonday(new Date());
+// ── Init ──
+(function(){
+  if(localStorage.getItem('strega_dark')==='1'){isDark=true;document.body.classList.add('dark');}
+  selDate=todayStr();weekStart=getWeekMonday(new Date());
 })();
 </script>
 </body>
