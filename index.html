@@ -502,7 +502,16 @@ import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-ap
 import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,updateProfile,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import{getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,orderBy,getDoc,deleteField}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const fbApp=initializeApp({apiKey:"AIzaSyATEM0SUbMivlkensO5h-DGjXEDFyIQKYE",authDomain:"stregalendario.firebaseapp.com",projectId:"stregalendario",storageBucket:"stregalendario.firebasestorage.app",messagingSenderId:"1066064406702",appId:"1:1066064406702:android:578cd32d315a098a7e653f"});
+// ⚠️  IMPORTANTE: sostituisci appId con quello WEB dalla Firebase Console
+// Firebase → Project Settings → Le tue app → App web → Configurazione SDK
+const fbApp=initializeApp({
+  apiKey:"AIzaSyATEM0SUbMivlkensO5h-DGjXEDFyIQKYE",
+  authDomain:"stregalendario.firebaseapp.com",
+  projectId:"stregalendario",
+  storageBucket:"stregalendario.firebasestorage.app",
+  messagingSenderId:"1066064406702",
+  appId:"1:1066064406702:web:eba6110ca4977dfc7e653f"  // ← da Firebase Console → App web
+});
 const auth=getAuth(fbApp),db=getFirestore(fbApp);
 
 // ── State ──
@@ -580,7 +589,15 @@ window.doAuth=async function(){
   }catch(e){errEl.textContent=e.message||'Errore';btn.disabled=false;btn.textContent=isLogin?'Accedi':'Registrati';}
 };
 
+// Timeout di sicurezza: se Firebase non risponde entro 8s, vai al login
+const splashTimeout=setTimeout(()=>{
+  console.warn('Firebase timeout – check appId in config');
+  showScreen('auth',false);
+  navHistory=['auth'];
+},8000);
+
 onAuthStateChanged(auth,async user=>{
+  clearTimeout(splashTimeout);
   currentUser=user;
   if(user){
     try{const name=user.displayName||user.email?.split('@')[0]||'Utente';await setDoc(doc(db,'users',user.uid),{name,email:user.email||'',displayName:name},{merge:true});}catch(_){}
