@@ -1043,7 +1043,7 @@ window.saveNewCategory=async function(){
   const key=label.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
   try{await setDoc(doc(db,'config','categories'),{[key]:{label,emoji,colorHex}},{merge:true});showToast('Categoria aggiunta');closeModal();}
   catch(e){showToast('Errore: '+e.message);}
-}};
+};
 window.openEditCategory=function(key){
   const cat=allCategories[key];if(!cat)return;
   const isDefault=['cinema','musica','teatro','natura','drink'].includes(key);
