@@ -101,6 +101,15 @@ body.dark{
 }
 .chip.active{border-color:var(--primary);background:rgba(124,58,237,.13);color:var(--primary);font-weight:700}
 body.dark .chip.active{background:rgba(124,58,237,.24);color:var(--primary-lt)}
+.chip-clear{
+  padding:4px 11px;border-radius:20px;
+  border:1.5px solid var(--cinema);background:rgba(255,107,107,.10);
+  color:#dc2626;font-size:11.5px;font-weight:700;cursor:pointer;
+  transition:all .15s;white-space:nowrap;display:none;
+}
+body.dark .chip-clear{color:var(--cinema);background:rgba(255,107,107,.16);}
+.chip-clear.visible{display:inline-flex;align-items:center;gap:3px;}
+.chip-clear:active{background:rgba(255,107,107,.22);}
 
 /* View tabs */
 .view-tabs{display:flex}
@@ -383,6 +392,8 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
 <div id="screen-splash" class="screen active">
   <div class="splash-logo">👩‍🦰</div>
   <div class="splash-name">Stregalendario</div>
+  <div style="font-size:13px;color:#BBB3D4;text-align:center;margin-top:4px;letter-spacing:.01em">calendario romano degli eventi tra amici</div>
+  <div style="font-size:11px;color:#7878A0;text-align:center;margin-top:3px;font-style:italic">v1.0 Cappotto de Matrix</div>
   <div class="spinner" style="margin-top:18px"></div>
 </div>
 
@@ -391,7 +402,8 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
   <div class="auth-header">
     <div class="auth-logo">👩‍🦰</div>
     <div class="auth-app-name">Stregalendario</div>
-    <div class="auth-tagline">Il calendario dei tuoi eventi</div>
+    <div class="auth-tagline">calendario romano degli eventi tra amici</div>
+    <div style="font-size:11px;color:#7878A0;margin-top:4px;font-style:italic">v1.0 Cappotto de Matrix</div>
   </div>
   <div>
     <div class="auth-tabs">
@@ -443,6 +455,7 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
   <div class="bottom-bar">
     <div class="filters" id="filters-bar">
       <div class="chip" data-filter="__partecipo__" onclick="toggleFilter(this)">✅ Partecipo</div>
+      <div class="chip-clear" id="chip-clear" onclick="clearAllFilters()">Tutti ×</div>
     </div>
     <div class="view-tabs" id="view-tabs">
       <button class="view-tab active" data-view="month" onclick="setView('month',this)">
@@ -627,21 +640,33 @@ function stopListeners(){[unsubEvents,unsubCats,unsubUsers].forEach(u=>{if(u)u()
 // ── Filters ──
 function renderFilters(){
   const bar=document.getElementById('filters-bar');if(!bar)return;
-  const first=bar.firstElementChild;
-  bar.innerHTML='';if(first)bar.appendChild(first);
+  const partecipo=bar.querySelector('[data-filter="__partecipo__"]');
+  const clearChip=document.getElementById('chip-clear');
+  // Remove all chips except partecipo and clear
+  Array.from(bar.children).forEach(c=>{if(c!==partecipo&&c!==clearChip)c.remove();});
   Object.entries(allCategories).forEach(([key,cat])=>{
     const chip=document.createElement('div');
     chip.className='chip'+(activeFilters.has(key)?' active':'');
     chip.dataset.filter=key;chip.textContent=`${cat.emoji} ${cat.label}`;
-    chip.onclick=()=>toggleFilter(chip);bar.appendChild(chip);
+    chip.onclick=()=>toggleFilter(chip);bar.insertBefore(chip,clearChip);
   });
-  if(first)first.classList.toggle('active',activeFilters.has('__partecipo__'));
+  if(partecipo)partecipo.classList.toggle('active',activeFilters.has('__partecipo__'));
+  if(clearChip)clearChip.classList.toggle('visible',activeFilters.size>0);
 }
 window.toggleFilter=function(el){
   const key=el.dataset.filter;
   if(activeFilters.has(key))activeFilters.delete(key);else activeFilters.add(key);
   el.classList.toggle('active',activeFilters.has(key));
-  renderEventList();
+  const clearChip=document.getElementById('chip-clear');
+  if(clearChip)clearChip.classList.toggle('visible',activeFilters.size>0);
+  renderCalendar(0);renderEventList();
+};
+window.clearAllFilters=function(){
+  activeFilters.clear();
+  document.querySelectorAll('#filters-bar .chip').forEach(c=>c.classList.remove('active'));
+  const clearChip=document.getElementById('chip-clear');
+  if(clearChip)clearChip.classList.remove('visible');
+  renderCalendar(0);renderEventList();
 };
 function filteredEvents(){
   const hasPart=activeFilters.has('__partecipo__');
@@ -756,9 +781,10 @@ function renderEventList(){
     if(!weekStart)weekStart=getWeekMonday(new Date());
     const endD=new Date(weekStart);endD.setDate(weekStart.getDate()+6);
     evs=evs.filter(e=>e.date>=dateToStr(weekStart)&&e.date<=dateToStr(endD));
-    if(selDate)evs=evs.filter(e=>e.date===selDate);
   } else {
-    if(selDate)evs=evs.filter(e=>e.date===selDate);
+    // month view: show all events in current month
+    const monthPrefix=`${calYear}-${p2(calMonth+1)}`;
+    evs=evs.filter(e=>e.date.startsWith(monthPrefix));
   }
   if(evs.length===0){
     el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">🗓</div><div style="font-size:15px;font-weight:600;color:var(--text-sub)">Nessun evento</div><div style="font-size:13px;color:var(--text-empty)">Tocca + per aggiungere</div></div>`;
@@ -1000,6 +1026,7 @@ function renderSettings(){
   const catChips=Object.entries(allCategories).map(([key,cat])=>`<div class="cat-badge" style="background:${cat.colorHex}" onclick="openEditCategory('${key}')">${cat.emoji} ${cat.label}</div>`).join('');
   const userRows=allUsers.map(u=>{const isMe=u.uid===user?.uid;return`<div class="user-row"><div class="user-avatar">${(u.displayName||u.name||'?').charAt(0).toUpperCase()}</div><div class="user-info"><div class="user-name">${escHtml(u.displayName||u.name||'Utente')}</div><div class="user-email">${escHtml(u.email||'')}</div></div>${isMe?'<div class="me-badge">tu</div>':''}</div>`;}).join('');
   body.innerHTML=`
+    <div class="settings-section"><div class="settings-section-title">Versione</div><div class="settings-card"><div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">👩‍🦰 Stregalendario</div><div class="settings-row-sub">v1.0 Cappotto de Matrix · calendario romano degli eventi tra amici</div></div></div></div></div>
     <div class="settings-section"><div class="settings-section-title">Profilo</div><div class="settings-card"><div class="user-row"><div class="user-avatar" style="font-size:20px">👩‍🦰</div><div class="user-info"><div class="user-name">${escHtml(user?.displayName||'Utente')}</div><div class="user-email">${escHtml(user?.email||'')}</div></div></div></div></div>
     <div class="settings-section"><div class="settings-section-title">Aspetto</div><div class="settings-card"><div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">Tema scuro</div><div class="settings-row-sub">Di default è attivo il tema chiaro</div></div><button class="toggle ${isDark?'on':''}" id="theme-toggle" onclick="toggleTheme()"></button></div></div></div>
     <div class="settings-section"><div class="settings-section-title">Categorie</div><div class="settings-card" style="padding:13px 14px"><div class="cat-list">${catChips}</div><button class="btn-primary" style="margin-top:12px;font-size:13px;padding:10px" onclick="openAddCategory()">+ Nuova categoria</button></div></div>
