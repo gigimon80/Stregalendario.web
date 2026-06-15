@@ -231,6 +231,7 @@ body.dark .view-tab.active::before{background:rgba(124,58,237,.25)}
 
 /* ── FAB ── */
 .fab,.fab-back{
+  z-index: 999; /* forza sopra tutto */
   position:fixed;bottom:calc(var(--filters-h, 60px) + 10px);
   width:50px;height:50px;border-radius:50%;
   border:none;cursor:pointer;box-shadow:var(--shadow);
@@ -424,7 +425,7 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
 </div>
 
 <!-- Calendar -->
-<div id="screen-calendar" class="screen active">
+<div id="screen-calendar" class="screen">
   <div class="topbar">
     <div class="topbar-title">👩‍🦰 Stregalendario</div>
     <div class="topbar-actions">
