@@ -774,18 +774,9 @@ function updatePeriodLabel(){
 function renderEventList(){
   const el=document.getElementById('event-list');if(!el)return;
   let evs=filteredEvents();
+  // Always show only the selected day (or today) in the event list below
   const ds=selDate||todayStr();
-  if(calView==='day'){
-    evs=evs.filter(e=>e.date===ds);
-  } else if(calView==='week'){
-    if(!weekStart)weekStart=getWeekMonday(new Date());
-    const endD=new Date(weekStart);endD.setDate(weekStart.getDate()+6);
-    evs=evs.filter(e=>e.date>=dateToStr(weekStart)&&e.date<=dateToStr(endD));
-  } else {
-    // month view: show all events in current month
-    const monthPrefix=`${calYear}-${p2(calMonth+1)}`;
-    evs=evs.filter(e=>e.date.startsWith(monthPrefix));
-  }
+  evs=evs.filter(e=>e.date===ds);
   if(evs.length===0){
     el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">🗓</div><div style="font-size:15px;font-weight:600;color:var(--text-sub)">Nessun evento</div><div style="font-size:13px;color:var(--text-empty)">Tocca + per aggiungere</div></div>`;
     return;
