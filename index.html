@@ -77,15 +77,17 @@ body.dark{
 
 /* ── Event list: takes remaining space, scrolls ── */
 .event-list{
-  flex:1;overflow-y:auto;padding:6px 12px 8px;
+  flex:1;overflow-y:auto;padding:6px 12px calc(var(--bb-h, 120px) + 8px);
   -webkit-overflow-scrolling:touch;min-height:0;
 }
 
-/* ── Bottom bar: always pinned ── */
+/* ── Bottom bar: always pinned, fixed to bottom ── */
 .bottom-bar{
-  flex-shrink:0;
+  position:fixed;
+  bottom:0;left:0;right:0;
   border-top:1px solid var(--border);background:var(--bg-deep);
   padding-bottom:env(safe-area-inset-bottom,0px);
+  z-index:60;
 }
 
 /* Filters: 2 rows via flex-wrap */
@@ -318,7 +320,7 @@ body.dark .attend-btn.not-attending{color:var(--primary-lt)}
 body.dark .btn-danger{color:var(--cinema)}
 .map-preview{margin:6px 18px 14px;border-radius:11px;border:1px solid var(--border);height:46px;background:var(--bg-field);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--text-sub);gap:7px;text-decoration:none;font-weight:600}
 
-.form-scroll{flex:1;overflow-y:auto;padding:14px 18px 90px;-webkit-overflow-scrolling:touch}
+.form-scroll{flex:1;overflow-y:auto;padding:14px 18px calc(var(--bb-h, 120px) + 14px);-webkit-overflow-scrolling:touch}
 .form-section{margin-bottom:16px}
 .form-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 .form-field{background:var(--bg-field);border:1.5px solid var(--border);border-radius:11px;padding:12px 14px;font-size:15px;color:var(--text-main);outline:none;width:100%;transition:border-color .15s;-webkit-appearance:none}
@@ -1121,10 +1123,40 @@ window.closeModal=function(e){if(e&&e.target!==document.getElementById('modal-ov
 // ── Measure bottom bar and set CSS var ──
 function updateBBHeight(){
   const bb=document.querySelector('.bottom-bar');
-  if(bb) document.documentElement.style.setProperty('--bb-h',bb.offsetHeight+'px');
+  if(bb){
+    const h=bb.offsetHeight;
+    document.documentElement.style.setProperty('--bb-h',h+'px');
+  }
 }
 window.addEventListener('resize',updateBBHeight);
 setTimeout(updateBBHeight,200);
+
+// ── Auto-scroll focused input above bottom bar ──
+(function setupFocusScroll(){
+  function onFocus(e){
+    const el=e.target;
+    if(!['INPUT','TEXTAREA','SELECT'].includes(el.tagName)) return;
+    // Wait for keyboard to appear (iOS/Android delay)
+    setTimeout(()=>{
+      const bb=document.querySelector('.bottom-bar');
+      const bbH=bb?bb.offsetHeight:0;
+      const rect=el.getBoundingClientRect();
+      const viewH=window.innerHeight;
+      // If element bottom is hidden behind bottom bar, scroll it into view
+      if(rect.bottom > viewH - bbH - 12){
+        const scrollable=el.closest('.form-scroll,.auth-body,.modal-sheet,.settings-scroll,.event-list');
+        if(scrollable){
+          const scrollableRect=scrollable.getBoundingClientRect();
+          const targetScrollTop=scrollable.scrollTop + rect.bottom - (viewH - bbH - 20);
+          scrollable.scrollTo({top:targetScrollTop,behavior:'smooth'});
+        } else {
+          el.scrollIntoView({behavior:'smooth',block:'center'});
+        }
+      }
+    },350);
+  }
+  document.addEventListener('focus',onFocus,true);
+})();
 
 // ── Init ──
 (function(){
