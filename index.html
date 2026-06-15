@@ -442,20 +442,10 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
 <div class="filters" id="filters-bar">
 <div class="chip" data-filter="__partecipo__" onclick="toggleFilter(this)">✅ Partecipo</div>
 </div>
-<div class="view-tabs" id="view-tabs">
-<button class="view-tab active" data-view="month" onclick="setView('month',this)">
-<span class="tab-icon">📅</span><span class="tab-label">Mese</span>
-</button>
-<button class="view-tab" data-view="week" onclick="setView('week',this)">
-<span class="tab-icon">📋</span><span class="tab-label">Settimana</span>
-</button>
-<button class="view-tab" data-view="day" onclick="setView('day',this)">
-<span class="tab-icon">☀️</span><span class="tab-label">Giorno</span>
-</button>
+<div class="view-tabs" id="view-tabs"><button class="view-tab" onclick="historyBack()"><span class="tab-icon">←</span><span class="tab-label">Indietro</span></button><button class="view-tab active" data-view="month" onclick="setView('month',this)"><span class="tab-icon">📅</span><span class="tab-label">Mese</span></button><button class="view-tab" data-view="week" onclick="setView('week',this)"><span class="tab-icon">📋</span><span class="tab-label">Settimana</span></button><button class="view-tab" data-view="day" onclick="setView('day',this)"><span class="tab-icon">☀️</span><span class="tab-label">Giorno</span></button><button class="view-tab" onclick="openEventForm(null,null)"><span class="tab-icon">+</span><span class="tab-label">Nuovo</span></button></div>
 </div>
-</div>
-<button class="fab" id="fab-add" onclick="openEventForm(null,null)">+</button>
-<button class="fab-back" id="fab-back-cal" onclick="historyBack()" style="display:none">←</button>
+
+
 </div>
 <!-- Event Detail -->
 <div class="screen" id="screen-detail">
