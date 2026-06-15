@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="it">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="default" name="apple-mobile-web-app-status-bar-style"/>
 <title>Stregalendario</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -374,129 +375,139 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
 @keyframes spin{to{transform:rotate(360deg)}}
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.splash-subtitle{
+  font-size:13px;
+  color:#BBB3D4;
+  margin-top:4px;
+  text-align:center;
+}
+.splash-version{
+  font-size:11px;
+  color:#7E7A9A;
+  margin-top:2px;
+  text-align:center;
+  opacity:0.85;
+}
+.auth-version{
+  font-size:11px;
+  color:rgba(255,255,255,.35);
+  margin-top:3px;
+}
 </style>
 </head>
 <body>
 <div id="app">
-
 <!-- Splash -->
-<div id="screen-splash" class="screen active">
-  <div class="splash-logo">👩‍🦰</div>
-  <div class="splash-name">Stregalendario</div>
-  <div class="spinner" style="margin-top:18px"></div>
+<div class="screen active" id="screen-splash">
+<div class="splash-logo">👩‍🦰</div>
+<div class="splash-name">Stregalendario</div><div class="splash-subtitle">calendario degli eventi romani tra amici</div><div class="splash-version">v1.0 Cappotto de Matrix</div>
+<div class="spinner" style="margin-top:18px"></div>
 </div>
-
 <!-- Auth -->
-<div id="screen-auth" class="screen">
-  <div class="auth-header">
-    <div class="auth-logo">👩‍🦰</div>
-    <div class="auth-app-name">Stregalendario</div>
-    <div class="auth-tagline">Il calendario dei tuoi eventi</div>
-  </div>
-  <div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Accedi</button>
-      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Registrati</button>
-    </div>
-    <div class="auth-body">
-      <input id="auth-name" class="auth-field" type="text" placeholder="Il tuo nome" autocomplete="name" style="display:none"/>
-      <input id="auth-email" class="auth-field" type="email" placeholder="Email" autocomplete="email" inputmode="email"/>
-      <div style="position:relative">
-        <input id="auth-pwd" class="auth-field" type="password" placeholder="Password" autocomplete="current-password" style="padding-right:46px"/>
-        <button onclick="togglePwd('auth-pwd')" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.38);cursor:pointer;font-size:17px">👁</button>
-      </div>
-      <div id="auth-confirm-wrap" style="display:none;position:relative">
-        <input id="auth-confirm" class="auth-field" type="password" placeholder="Conferma password" autocomplete="new-password" style="padding-right:46px"/>
-        <button onclick="togglePwd('auth-confirm')" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.38);cursor:pointer;font-size:17px">👁</button>
-      </div>
-      <div class="auth-error" id="auth-error"></div>
-    </div>
-  </div>
-  <div class="auth-footer">
-    <button class="btn-primary" id="auth-btn" onclick="doAuth()">Accedi</button>
-  </div>
+<div class="screen" id="screen-auth">
+<div class="auth-header">
+<div class="auth-logo">👩‍🦰</div>
+<div class="auth-app-name">Stregalendario</div>
+<div class="auth-tagline">calendario degli eventi romani tra amici</div><div class="auth-version">v1.0 Cappotto de Matrix</div>
 </div>
-
+<div>
+<div class="auth-tabs">
+<button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Accedi</button>
+<button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Registrati</button>
+</div>
+<div class="auth-body">
+<input autocomplete="name" class="auth-field" id="auth-name" placeholder="Il tuo nome" style="display:none" type="text"/>
+<input autocomplete="email" class="auth-field" id="auth-email" inputmode="email" placeholder="Email" type="email"/>
+<div style="position:relative">
+<input autocomplete="current-password" class="auth-field" id="auth-pwd" placeholder="Password" style="padding-right:46px" type="password"/>
+<button onclick="togglePwd('auth-pwd')" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.38);cursor:pointer;font-size:17px">👁</button>
+</div>
+<div id="auth-confirm-wrap" style="display:none;position:relative">
+<input autocomplete="new-password" class="auth-field" id="auth-confirm" placeholder="Conferma password" style="padding-right:46px" type="password"/>
+<button onclick="togglePwd('auth-confirm')" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.38);cursor:pointer;font-size:17px">👁</button>
+</div>
+<div class="auth-error" id="auth-error"></div>
+</div>
+</div>
+<div class="auth-footer">
+<button class="btn-primary" id="auth-btn" onclick="doAuth()">Accedi</button>
+</div>
+</div>
 <!-- Calendar -->
-<div id="screen-calendar" class="screen">
-  <div class="topbar">
-    <div class="topbar-title">👩‍🦰 Stregalendario</div>
-    <div class="topbar-actions">
-      <button class="icon-btn" onclick="goToday()" title="Oggi">🏠</button>
-      <button class="icon-btn" onclick="showScreen('settings')" title="Impostazioni">⚙️</button>
-    </div>
-  </div>
-  <div class="cal-nav">
-    <button class="icon-btn" onclick="navPeriod(-1)" id="btn-prev">‹</button>
-    <div class="cal-nav-label" id="period-label"></div>
-    <button class="icon-btn" onclick="navPeriod(1)" id="btn-next">›</button>
-  </div>
-  <!-- Calendar grid/week/day area with swipe support -->
-  <div id="cal-wrapper">
-    <div class="swipe-arrow left" id="swipe-left">‹</div>
-    <div class="swipe-arrow right" id="swipe-right">›</div>
-    <div id="cal-area"></div>
-  </div>
-  <!-- Event list -->
-  <div class="event-list" id="event-list"></div>
-  <!-- Bottom bar always visible -->
-  <div class="bottom-bar">
-    <div class="filters" id="filters-bar">
-      <div class="chip" data-filter="__partecipo__" onclick="toggleFilter(this)">✅ Partecipo</div>
-    </div>
-    <div class="view-tabs" id="view-tabs">
-      <button class="view-tab active" data-view="month" onclick="setView('month',this)">
-        <span class="tab-icon">📅</span><span class="tab-label">Mese</span>
-      </button>
-      <button class="view-tab" data-view="week" onclick="setView('week',this)">
-        <span class="tab-icon">📋</span><span class="tab-label">Settimana</span>
-      </button>
-      <button class="view-tab" data-view="day" onclick="setView('day',this)">
-        <span class="tab-icon">☀️</span><span class="tab-label">Giorno</span>
-      </button>
-    </div>
-  </div>
-  <button class="fab" onclick="openEventForm(null,null)" id="fab-add">+</button>
-  <button class="fab-back" onclick="historyBack()" id="fab-back-cal" style="display:none">←</button>
+<div class="screen" id="screen-calendar">
+<div class="topbar">
+<div class="topbar-title">👩‍🦰 Stregalendario</div>
+<div class="topbar-actions">
+<button class="icon-btn" onclick="goToday()" title="Oggi">🏠</button>
+<button class="icon-btn" onclick="showScreen('settings')" title="Impostazioni">⚙️</button>
 </div>
-
+</div>
+<div class="cal-nav">
+<button class="icon-btn" id="btn-prev" onclick="navPeriod(-1)">‹</button>
+<div class="cal-nav-label" id="period-label"></div>
+<button class="icon-btn" id="btn-next" onclick="navPeriod(1)">›</button>
+</div>
+<!-- Calendar grid/week/day area with swipe support -->
+<div id="cal-wrapper">
+<div class="swipe-arrow left" id="swipe-left">‹</div>
+<div class="swipe-arrow right" id="swipe-right">›</div>
+<div id="cal-area"></div>
+</div>
+<!-- Event list -->
+<div class="event-list" id="event-list"></div>
+<!-- Bottom bar always visible -->
+<div class="bottom-bar">
+<div class="filters" id="filters-bar">
+<div class="chip" data-filter="__partecipo__" onclick="toggleFilter(this)">✅ Partecipo</div>
+</div>
+<div class="view-tabs" id="view-tabs">
+<button class="view-tab active" data-view="month" onclick="setView('month',this)">
+<span class="tab-icon">📅</span><span class="tab-label">Mese</span>
+</button>
+<button class="view-tab" data-view="week" onclick="setView('week',this)">
+<span class="tab-icon">📋</span><span class="tab-label">Settimana</span>
+</button>
+<button class="view-tab" data-view="day" onclick="setView('day',this)">
+<span class="tab-icon">☀️</span><span class="tab-label">Giorno</span>
+</button>
+</div>
+</div>
+<button class="fab" id="fab-add" onclick="openEventForm(null,null)">+</button>
+<button class="fab-back" id="fab-back-cal" onclick="historyBack()" style="display:none">←</button>
+</div>
 <!-- Event Detail -->
-<div id="screen-detail" class="screen">
-  <div class="topbar">
-    <button class="icon-btn back-btn" onclick="historyBack()">←</button>
-    <div class="topbar-title">Evento</div>
-    <div style="width:38px"></div>
-  </div>
-  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch" id="detail-content"></div>
+<div class="screen" id="screen-detail">
+<div class="topbar">
+<button class="icon-btn back-btn" onclick="historyBack()">←</button>
+<div class="topbar-title">Evento</div>
+<div style="width:38px"></div>
 </div>
-
+<div id="detail-content" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
+</div>
 <!-- Event Form -->
-<div id="screen-form" class="screen">
-  <div class="topbar">
-    <button class="icon-btn back-btn" onclick="historyBack()">←</button>
-    <div class="topbar-title" id="form-title">Nuovo evento</div>
-    <button class="icon-btn" onclick="saveEventForm()" style="background:var(--primary);color:#fff">✓</button>
-  </div>
-  <div class="form-scroll" id="form-body"></div>
+<div class="screen" id="screen-form">
+<div class="topbar">
+<button class="icon-btn back-btn" onclick="historyBack()">←</button>
+<div class="topbar-title" id="form-title">Nuovo evento</div>
+<button class="icon-btn" onclick="saveEventForm()" style="background:var(--primary);color:#fff">✓</button>
 </div>
-
+<div class="form-scroll" id="form-body"></div>
+</div>
 <!-- Settings -->
-<div id="screen-settings" class="screen">
-  <div class="topbar">
-    <button class="icon-btn back-btn" onclick="historyBack()">←</button>
-    <div class="topbar-title">Impostazioni</div>
-    <div style="width:38px"></div>
-  </div>
-  <div class="settings-scroll" id="settings-body"></div>
+<div class="screen" id="screen-settings">
+<div class="topbar">
+<button class="icon-btn back-btn" onclick="historyBack()">←</button>
+<div class="topbar-title">Impostazioni</div>
+<div style="width:38px"></div>
 </div>
-
+<div class="settings-scroll" id="settings-body"></div>
 </div>
-
+</div>
 <div class="toast" id="toast"></div>
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
-  <div class="modal-sheet"><div class="modal-handle"></div><div id="modal-content"></div></div>
+<div class="modal-sheet"><div class="modal-handle"></div><div id="modal-content"></div></div>
 </div>
-
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,updateProfile,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
