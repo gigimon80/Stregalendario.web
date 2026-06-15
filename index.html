@@ -112,7 +112,7 @@ body.dark .chip-clear{color:var(--cinema);background:rgba(255,107,107,.16);}
 .chip-clear:active{background:rgba(255,107,107,.22);}
 
 /* View tabs */
-.view-tabs{display:flex}
+.view-tabs{display:flex;align-items:center;padding:4px 8px;gap:2px}
 .view-tab{
   flex:1;padding:8px 4px 6px;border:none;background:transparent;
   color:var(--text-muted);cursor:pointer;
@@ -238,17 +238,26 @@ body.dark .view-tab.active::before{background:rgba(124,58,237,.25)}
 }
 .empty-state-icon{font-size:36px;opacity:.45}
 
-/* ── FAB ── */
-.fab,.fab-back{
-  position:fixed;bottom:calc(var(--bb-h) + 10px);
-  width:50px;height:50px;border-radius:50%;
-  border:none;cursor:pointer;box-shadow:var(--shadow);
+/* ── Bar action buttons (replace FAB) ── */
+.bar-btn{
+  width:42px;height:42px;border-radius:50%;
+  border:none;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  transition:transform .15s;z-index:40;
+  transition:transform .15s,opacity .15s,box-shadow .15s;flex-shrink:0;
+  font-size:20px;font-weight:700;
 }
-.fab{right:18px;background:var(--primary);color:#fff;font-size:26px}
-.fab-back{left:18px;background:var(--bg-card);border:1.5px solid var(--border) !important;color:var(--text-sub);font-size:24px;font-weight:700}
-.fab:active,.fab-back:active{transform:scale(.88)}
+.bar-btn-primary{
+  background:var(--primary);color:#fff;
+  box-shadow:0 3px 12px rgba(124,58,237,.45);
+}
+.bar-btn-secondary{
+  background:var(--primary);color:#fff;
+  box-shadow:0 3px 12px rgba(124,58,237,.35);
+  opacity:.75;
+}
+.bar-btn-secondary[disabled]{opacity:.25;pointer-events:none;box-shadow:none}
+.bar-btn:active{transform:scale(.88)}
+.bar-btn[disabled]{opacity:.25;pointer-events:none}
 
 /* ── Auth ── */
 #screen-auth{
@@ -458,19 +467,19 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
       <div class="chip-clear" id="chip-clear" onclick="clearAllFilters()">Tutti ×</div>
     </div>
     <div class="view-tabs" id="view-tabs">
-      <button class="view-tab active" data-view="month" onclick="setView('month',this)">
+      <button class="bar-btn bar-btn-secondary" id="bar-back-btn" onclick="calBarBack()">←</button>
+      <button class="view-tab active" data-view="month" onclick="setView('month',this)" style="flex:1">
         <span class="tab-icon">📅</span><span class="tab-label">Mese</span>
       </button>
-      <button class="view-tab" data-view="week" onclick="setView('week',this)">
+      <button class="view-tab" data-view="week" onclick="setView('week',this)" style="flex:1">
         <span class="tab-icon">📋</span><span class="tab-label">Settimana</span>
       </button>
-      <button class="view-tab" data-view="day" onclick="setView('day',this)">
+      <button class="view-tab" data-view="day" onclick="setView('day',this)" style="flex:1">
         <span class="tab-icon">☀️</span><span class="tab-label">Giorno</span>
       </button>
+      <button class="bar-btn bar-btn-primary" onclick="openEventForm(null,null)">+</button>
     </div>
   </div>
-  <button class="fab" onclick="openEventForm(null,null)" id="fab-add">+</button>
-  <button class="fab-back" onclick="historyBack()" id="fab-back-cal" style="display:none">←</button>
 </div>
 
 <!-- Event Detail -->
@@ -558,10 +567,19 @@ window.showScreen=function(id,push=true){
   document.getElementById('screen-'+id).classList.add('active');
   if(push&&id!=='splash') navHistory.push(id);
   if(id==='settings') renderSettings();
+  updateBarBackBtn();
 };
 window.historyBack=function(){
   navHistory.pop();
   showScreen(navHistory[navHistory.length-1]||'calendar',false);
+};
+function updateBarBackBtn(){
+  const btn=document.getElementById('bar-back-btn');if(!btn)return;
+  const canBack=navHistory.length>1;
+  btn.disabled=!canBack;
+}
+window.calBarBack=function(){
+  if(navHistory.length>1) historyBack();
 };
 
 // ── Toast ──
@@ -1017,8 +1035,8 @@ function renderSettings(){
   const catChips=Object.entries(allCategories).map(([key,cat])=>`<div class="cat-badge" style="background:${cat.colorHex}" onclick="openEditCategory('${key}')">${cat.emoji} ${cat.label}</div>`).join('');
   const userRows=allUsers.map(u=>{const isMe=u.uid===user?.uid;return`<div class="user-row"><div class="user-avatar">${(u.displayName||u.name||'?').charAt(0).toUpperCase()}</div><div class="user-info"><div class="user-name">${escHtml(u.displayName||u.name||'Utente')}</div><div class="user-email">${escHtml(u.email||'')}</div></div>${isMe?'<div class="me-badge">tu</div>':''}</div>`;}).join('');
   body.innerHTML=`
-    <div class="settings-section"><div class="settings-section-title">Versione</div><div class="settings-card"><div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">👩‍🦰 Stregalendario</div><div class="settings-row-sub">v1.0 Cappotto de Matrix · calendario romano degli eventi tra amici</div></div></div></div></div>
-    <div class="settings-section"><div class="settings-section-title">Profilo</div><div class="settings-card"><div class="user-row"><div class="user-avatar" style="font-size:20px">👩‍🦰</div><div class="user-info"><div class="user-name">${escHtml(user?.displayName||'Utente')}</div><div class="user-email">${escHtml(user?.email||'')}</div></div></div></div></div>
+    <div class="settings-section"><div class="settings-section-title">Versione</div><div class="settings-card"><div class="settings-row"><div class="settings-row-info"><div class="settings-row-label" style="font-style:italic;color:var(--text-muted)">v1.0 Cappotto de Matrix</div></div></div></div></div>
+    <div class="settings-section"><div class="settings-section-title">Profilo</div><div class="settings-card"><div class="user-row"><div class="user-avatar">${escHtml((user?.displayName||user?.email||'?').charAt(0).toUpperCase())}</div><div class="user-info"><div class="user-name">${escHtml(user?.displayName||'Utente')}</div><div class="user-email">${escHtml(user?.email||'')}</div></div></div></div></div>
     <div class="settings-section"><div class="settings-section-title">Aspetto</div><div class="settings-card"><div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">Tema scuro</div><div class="settings-row-sub">Di default è attivo il tema chiaro</div></div><button class="toggle ${isDark?'on':''}" id="theme-toggle" onclick="toggleTheme()"></button></div></div></div>
     <div class="settings-section"><div class="settings-section-title">Categorie</div><div class="settings-card" style="padding:13px 14px"><div class="cat-list">${catChips}</div><button class="btn-primary" style="margin-top:12px;font-size:13px;padding:10px" onclick="openAddCategory()">+ Nuova categoria</button></div></div>
     <div class="settings-section"><div class="settings-section-title">Utenti del gruppo</div><div class="settings-card">${userRows||'<div style="padding:14px;color:var(--text-muted);font-size:13px">Nessun utente</div>'}</div></div>
