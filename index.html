@@ -375,6 +375,25 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
 @keyframes spin{to{transform:rotate(360deg)}}
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.splash-subtitle{
+  font-size:13px;
+  color:#BBB3D4;
+  margin-top:4px;
+  text-align:center;
+}
+.splash-version{
+  font-size:11px;
+  color:#7E7A9A;
+  margin-top:2px;
+  text-align:center;
+  opacity:0.85;
+}
+.auth-version{
+  font-size:11px;
+  color:rgba(255,255,255,.35);
+  margin-top:3px;
+}
 </style>
 </head>
 <body>
@@ -382,7 +401,7 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
 <!-- Splash -->
 <div class="screen active" id="screen-splash">
 <div class="splash-logo">👩‍🦰</div>
-<div class="splash-name">Stregalendario</div>
+<div class="splash-name">Stregalendario</div><div class="splash-subtitle">calendario degli eventi romani tra amici</div><div class="splash-version">v1.0 Cappotto de Matrix</div>
 <div class="spinner" style="margin-top:18px"></div>
 </div>
 <!-- Auth -->
@@ -390,7 +409,7 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
 <div class="auth-header">
 <div class="auth-logo">👩‍🦰</div>
 <div class="auth-app-name">Stregalendario</div>
-<div class="auth-tagline">Il calendario dei tuoi eventi</div>
+<div class="auth-tagline">calendario degli eventi romani tra amici</div><div class="auth-version">v1.0 Cappotto de Matrix</div>
 </div>
 <div>
 <div class="auth-tabs">
@@ -442,10 +461,20 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
 <div class="filters" id="filters-bar">
 <div class="chip" data-filter="__partecipo__" onclick="toggleFilter(this)">✅ Partecipo</div>
 </div>
-<div class="view-tabs" id="view-tabs"><button class="view-tab" onclick="historyBack()"><span class="tab-icon">←</span><span class="tab-label">Indietro</span></button><button class="view-tab active" data-view="month" onclick="setView('month',this)"><span class="tab-icon">📅</span><span class="tab-label">Mese</span></button><button class="view-tab" data-view="week" onclick="setView('week',this)"><span class="tab-icon">📋</span><span class="tab-label">Settimana</span></button><button class="view-tab" data-view="day" onclick="setView('day',this)"><span class="tab-icon">☀️</span><span class="tab-label">Giorno</span></button><button class="view-tab" onclick="openEventForm(null,null)"><span class="tab-icon">+</span><span class="tab-label">Nuovo</span></button></div>
+<div class="view-tabs" id="view-tabs">
+<button class="view-tab active" data-view="month" onclick="setView('month',this)">
+<span class="tab-icon">📅</span><span class="tab-label">Mese</span>
+</button>
+<button class="view-tab" data-view="week" onclick="setView('week',this)">
+<span class="tab-icon">📋</span><span class="tab-label">Settimana</span>
+</button>
+<button class="view-tab" data-view="day" onclick="setView('day',this)">
+<span class="tab-icon">☀️</span><span class="tab-label">Giorno</span>
+</button>
 </div>
-
-
+</div>
+<button class="fab" id="fab-add" onclick="openEventForm(null,null)">+</button>
+<button class="fab-back" id="fab-back-cal" onclick="historyBack()" style="display:none">←</button>
 </div>
 <!-- Event Detail -->
 <div class="screen" id="screen-detail">
