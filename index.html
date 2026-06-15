@@ -55,6 +55,7 @@ body.dark{
   width:38px;height:38px;display:flex;align-items:center;justify-content:center;
   font-size:18px;transition:background .15s;
 }
+.icon-btn.back-btn{font-size:24px;font-weight:700;padding-right:2px}
 .icon-btn:active{background:var(--border)}
 
 /* ── Calendar screen layout: fixed column, no page scroll ── */
@@ -229,15 +230,16 @@ body.dark .view-tab.active::before{background:rgba(124,58,237,.25)}
 .empty-state-icon{font-size:36px;opacity:.45}
 
 /* ── FAB ── */
-.fab{
-  position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom,0px));
+.fab,.fab-back{
+  position:fixed;bottom:calc(var(--bb-h) + 10px);
   width:50px;height:50px;border-radius:50%;
-  background:var(--primary);border:none;color:#fff;
-  font-size:26px;cursor:pointer;box-shadow:var(--shadow);
+  border:none;cursor:pointer;box-shadow:var(--shadow);
   display:flex;align-items:center;justify-content:center;
   transition:transform .15s;z-index:40;
 }
-.fab:active{transform:scale(.88)}
+.fab{right:18px;background:var(--primary);color:#fff;font-size:26px}
+.fab-back{left:18px;background:var(--bg-card);border:1.5px solid var(--border) !important;color:var(--text-sub);font-size:24px;font-weight:700}
+.fab:active,.fab-back:active{transform:scale(.88)}
 
 /* ── Auth ── */
 #screen-auth{
@@ -314,6 +316,16 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
 .attendee-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;color:transparent;font-size:12px}
 .attendee-check.checked{background:var(--primary);border-color:var(--primary);color:#fff}
 .attendee-name{font-size:14px;color:var(--text-main);font-weight:500}
+/* emoji picker */
+.emoji-grid{display:flex;flex-wrap:wrap;gap:4px;max-height:160px;overflow-y:auto;padding:6px 0}
+.emoji-btn{
+  width:38px;height:38px;border-radius:8px;border:1.5px solid transparent;
+  background:var(--bg-field);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .12s,background .12s;
+}
+.emoji-btn.picked{border-color:var(--primary);background:rgba(124,58,237,.12)}
+.emoji-btn:active{transform:scale(.9)}
 
 .settings-scroll{flex:1;overflow-y:auto;padding:10px 14px 36px;-webkit-overflow-scrolling:touch}
 .settings-section{margin-bottom:22px}
@@ -444,13 +456,14 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
       </button>
     </div>
   </div>
-  <button class="fab" onclick="openEventForm(null,null)">+</button>
+  <button class="fab" onclick="openEventForm(null,null)" id="fab-add">+</button>
+  <button class="fab-back" onclick="historyBack()" id="fab-back-cal" style="display:none">←</button>
 </div>
 
 <!-- Event Detail -->
 <div id="screen-detail" class="screen">
   <div class="topbar">
-    <button class="icon-btn" onclick="historyBack()">←</button>
+    <button class="icon-btn back-btn" onclick="historyBack()">←</button>
     <div class="topbar-title">Evento</div>
     <div style="width:38px"></div>
   </div>
@@ -460,7 +473,7 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
 <!-- Event Form -->
 <div id="screen-form" class="screen">
   <div class="topbar">
-    <button class="icon-btn" onclick="historyBack()">←</button>
+    <button class="icon-btn back-btn" onclick="historyBack()">←</button>
     <div class="topbar-title" id="form-title">Nuovo evento</div>
     <button class="icon-btn" onclick="saveEventForm()" style="background:var(--primary);color:#fff">✓</button>
   </div>
@@ -470,7 +483,7 @@ body.dark .type-option.selected{background:rgba(124,58,237,.2)}
 <!-- Settings -->
 <div id="screen-settings" class="screen">
   <div class="topbar">
-    <button class="icon-btn" onclick="historyBack()">←</button>
+    <button class="icon-btn back-btn" onclick="historyBack()">←</button>
     <div class="topbar-title">Impostazioni</div>
     <div style="width:38px"></div>
   </div>
@@ -489,7 +502,16 @@ import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-ap
 import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,updateProfile,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import{getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,orderBy,getDoc,deleteField}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const fbApp=initializeApp({apiKey:"AIzaSyATEM0SUbMivlkensO5h-DGjXEDFyIQKYE",authDomain:"stregalendario.firebaseapp.com",projectId:"stregalendario",storageBucket:"stregalendario.firebasestorage.app",messagingSenderId:"1066064406702",appId:"1:1066064406702:android:578cd32d315a098a7e653f"});
+// ⚠️  IMPORTANTE: sostituisci appId con quello WEB dalla Firebase Console
+// Firebase → Project Settings → Le tue app → App web → Configurazione SDK
+const fbApp=initializeApp({
+  apiKey:"AIzaSyATEM0SUbMivlkensO5h-DGjXEDFyIQKYE",
+  authDomain:"stregalendario.firebaseapp.com",
+  projectId:"stregalendario",
+  storageBucket:"stregalendario.firebasestorage.app",
+  messagingSenderId:"1066064406702",
+  appId:"1:1066064406702:web:eba6110ca4977dfc7e653f"
+});
 const auth=getAuth(fbApp),db=getFirestore(fbApp);
 
 // ── State ──
@@ -567,7 +589,15 @@ window.doAuth=async function(){
   }catch(e){errEl.textContent=e.message||'Errore';btn.disabled=false;btn.textContent=isLogin?'Accedi':'Registrati';}
 };
 
+// Timeout di sicurezza: se Firebase non risponde entro 8s, vai al login
+const splashTimeout=setTimeout(()=>{
+  console.warn('Firebase timeout – check appId in config');
+  showScreen('auth',false);
+  navHistory=['auth'];
+},8000);
+
 onAuthStateChanged(auth,async user=>{
+  clearTimeout(splashTimeout);
   currentUser=user;
   if(user){
     try{const name=user.displayName||user.email?.split('@')[0]||'Utente';await setDoc(doc(db,'users',user.uid),{name,email:user.email||'',displayName:name},{merge:true});}catch(_){}
@@ -898,39 +928,56 @@ window.openEventForm=function(eventId,prefillDate){
   const existing=eventId?allEvents.find(e=>e.id===eventId):null;
   document.getElementById('form-title').textContent=existing?'Modifica evento':'Nuovo evento';
   const defaultDate=prefillDate||selDate||todayStr();
-  const cats=Object.entries(allCategories).map(([key,cat])=>`<div class="type-option${(existing?.type||'cinema')===key?' selected':''}" data-type="${key}" onclick="selectType(this)"><span style="font-size:19px">${cat.emoji}</span><span style="color:${cat.colorHex}">${cat.label}</span></div>`).join('');
-  const userRows=allUsers.map(u=>{
-    const checked=(existing?.attendeeUids||[]).includes(u.uid);
-    const sn=escHtml(u.displayName||u.name||'Utente');
-    return`<div class="attendee-row" data-uid="${u.uid}" data-name="${sn}" onclick="toggleFormAttendee(this)"><div class="attendee-check ${checked?'checked':''}">✓</div><div class="attendee-name">${sn}</div></div>`;
-  }).join('');
+  // No pre-selection of type
+  const cats=Object.entries(allCategories).map(([key,cat])=>`<div class="type-option${existing?.type===key?' selected':''}" data-type="${key}" onclick="selectType(this)"><span style="font-size:19px">${cat.emoji}</span><span style="color:${cat.colorHex}">${cat.label}</span></div>`).join('');
+  // partecipa toggle: checked only if user already in attendees
+  const iAmIn=existing&&currentUser&&(existing.attendeeUids||[]).includes(currentUser.uid);
   document.getElementById('form-body').innerHTML=`
-    <div class="form-section"><div class="form-label">Titolo</div><input id="f-title" class="form-field" type="text" placeholder="Nome evento" value="${escHtml(existing?.title||'')}" autocomplete="off"/></div>
-    <div class="form-section"><div class="form-label">Data</div><input id="f-date" class="form-field" type="date" value="${existing?.date||defaultDate}"/></div>
-    <div class="form-section"><div class="form-label">Ora (opzionale)</div><input id="f-time" class="form-field" type="time" value="${existing?.time||''}"/></div>
-    <div class="form-section"><div class="form-label">Tipo</div><div class="type-grid">${cats}</div></div>
+    <div class="form-section"><div class="form-label">Titolo *</div><input id="f-title" class="form-field" type="text" placeholder="Nome evento" value="${escHtml(existing?.title||'')}" autocomplete="off"/></div>
+    <div class="form-section"><div class="form-label">Data *</div><input id="f-date" class="form-field" type="date" value="${existing?.date||defaultDate}"/></div>
+    <div class="form-section"><div class="form-label">Ora (opzionale)</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="f-time" class="form-field" type="time" value="${existing?.time||''}" style="flex:1"/>
+        <button type="button" onclick="clearTime()" style="padding:11px 13px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-field);color:var(--text-muted);font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;white-space:nowrap">Rimuovi</button>
+      </div>
+    </div>
+    <div class="form-section"><div class="form-label">Tipo *</div><div class="type-grid">${cats}</div></div>
     <div class="form-section"><div class="form-label">Luogo</div><input id="f-place" class="form-field" type="text" placeholder="Via, Piazza, Nome locale…" value="${escHtml(existing?.place||'')}"/></div>
     <div class="form-section"><div class="form-label">Descrizione</div><textarea id="f-desc" class="form-field" rows="3" placeholder="Note, link, dettagli…">${escHtml(existing?.description||'')}</textarea></div>
-    <div class="form-section"><div class="form-label">Partecipanti</div><div class="attendee-list" id="attendee-list">${userRows}</div></div>`;
+    <div class="form-section">
+      <button id="f-partecipa" class="attend-btn ${iAmIn?'attending':'not-attending'}" onclick="toggleFormPartecipa()" style="width:100%;margin:0">
+        ${iAmIn?'✅ Partecipo · tocca per rimuoverti':'➕ Partecipa a questo evento'}
+      </button>
+    </div>`;
   showScreen('form');
 };
+window.clearTime=function(){const f=document.getElementById('f-time');if(f)f.value='';};
 window.selectType=function(el){document.querySelectorAll('.type-option').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');};
-window.toggleFormAttendee=function(row){row.querySelector('.attendee-check').classList.toggle('checked');};
+window.toggleFormPartecipa=function(){
+  const btn=document.getElementById('f-partecipa');
+  const isIn=btn.classList.contains('attending');
+  btn.classList.toggle('attending',!isIn);btn.classList.toggle('not-attending',isIn);
+  btn.textContent=isIn?'➕ Partecipa a questo evento':'✅ Partecipo · tocca per rimuoverti';
+};
 window.saveEventForm=async function(){
   const title=document.getElementById('f-title')?.value.trim();
   const date=document.getElementById('f-date')?.value;
-  if(!title){showToast('Inserisci un titolo');return;}
-  if(!date){showToast('Inserisci una data');return;}
-  const type=document.querySelector('.type-option.selected')?.dataset.type||'cinema';
+  const typeEl=document.querySelector('.type-option.selected');
+  if(!title){showToast('Il titolo è obbligatorio');return;}
+  if(!date){showToast('La data è obbligatoria');return;}
+  if(!typeEl){showToast('Seleziona una categoria');return;}
+  const type=typeEl.dataset.type;
   const time=document.getElementById('f-time')?.value||'';
   const place=document.getElementById('f-place')?.value.trim()||'';
   const desc=document.getElementById('f-desc')?.value.trim()||'';
-  const attendeeUids=[],attendeeNames=[];
-  document.querySelectorAll('#attendee-list .attendee-row').forEach(row=>{
-    if(row.querySelector('.attendee-check')?.classList.contains('checked')){
-      attendeeUids.push(row.dataset.uid);attendeeNames.push(row.dataset.name);
-    }
-  });
+  // partecipa
+  const iAmIn=document.getElementById('f-partecipa')?.classList.contains('attending');
+  const uid=currentUser?.uid;
+  const uname=currentUser?.displayName||currentUser?.email||'Utente';
+  let attendeeUids=[...(allEvents.find(e=>e.id===editingEventId)?.attendeeUids||[])];
+  let attendeeNames=[...(allEvents.find(e=>e.id===editingEventId)?.attendees||[])];
+  if(iAmIn&&uid&&!attendeeUids.includes(uid)){attendeeUids.push(uid);attendeeNames.push(uname);}
+  if(!iAmIn&&uid){attendeeUids=attendeeUids.filter(u=>u!==uid);attendeeNames=attendeeNames.filter(n=>n!==uname);}
   const data={title,date,time,type,place,description:desc,attendees:attendeeNames,attendeeUids};
   try{
     if(editingEventId){
@@ -969,11 +1016,28 @@ window.confirmLogout=function(){showModal(`<div class="modal-title">Esci dall'ac
 window.doLogout=async function(){closeModal();await signOut(auth);navHistory=['auth'];};
 
 window.openAddCategory=function(){
-  showModal(`<div class="modal-title">Nuova categoria</div><div style="display:flex;flex-direction:column;gap:11px"><input id="nc-label" class="form-field" placeholder="Nome (es. Sport)" autocomplete="off"/><input id="nc-emoji" class="form-field" placeholder="Emoji (es. ⚽)" maxlength="2"/><input id="nc-color" class="form-field" type="color" value="#3B82F6" style="height:46px;cursor:pointer"/></div><div class="modal-actions"><button class="btn-secondary" onclick="closeModal()">Annulla</button><button class="btn-primary-sm" onclick="saveNewCategory()">Salva</button></div>`);
+  showModal(`<div class="modal-title">Nuova categoria</div>
+    <div style="display:flex;flex-direction:column;gap:11px">
+      <input id="nc-label" class="form-field" placeholder="Nome (es. Sport)" autocomplete="off"/>
+      <div class="form-label" style="margin-bottom:0">Emoji</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div id="nc-emoji-preview" style="width:44px;height:44px;border-radius:11px;background:var(--bg-field);border:1.5px solid var(--border);font-size:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0">📌</div>
+        <div class="emoji-grid" style="flex:1"><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎬">🎬</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎵">🎵</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎭">🎭</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🌿">🌿</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🍹">🍹</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="⚽">⚽</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🏀">🏀</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎾">🎾</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🏋️">🏋️</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎨">🎨</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="📚">📚</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="✈️">✈️</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎮">🎮</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎤">🎤</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🍕">🍕</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="☕">☕</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎂">🎂</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎁">🎁</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="💃">💃</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🏖️">🏖️</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎪">🎪</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🏛️">🏛️</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎠">🎠</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎡">🎡</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎢">🎢</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🤿">🤿</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🚴">🚴</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🧗">🧗</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎻">🎻</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🥳">🥳</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎯">🎯</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎲">🎲</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🃏">🃏</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎰">🎰</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎳">🎳</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🎿">🎿</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="⛷️">⛷️</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🏂">🏂</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🤸">🤸</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🥊">🥊</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🏇">🏇</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🛸">🛸</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🚀">🚀</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🌙">🌙</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="⭐">⭐</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🌈">🌈</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🌺">🌺</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🦋">🦋</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🐬">🐬</div><div class="emoji-btn" onclick="pickEmoji(this)" data-emoji="🦁">🦁</div></div>
+      </div>
+      <input id="nc-color" class="form-field" type="color" value="#3B82F6" style="height:46px;cursor:pointer"/>
+    </div>
+    <div class="modal-actions" style="margin-top:12px"><button class="btn-secondary" onclick="closeModal()">Annulla</button><button class="btn-primary-sm" onclick="saveNewCategory()">Salva</button></div>`);
+};
+window.pickEmoji=function(el){
+  document.querySelectorAll('.emoji-btn').forEach(b=>b.classList.remove('picked'));
+  el.classList.add('picked');
+  const prev=document.getElementById('nc-emoji-preview');
+  if(prev)prev.textContent=el.dataset.emoji;
 };
 window.saveNewCategory=async function(){
   const label=document.getElementById('nc-label')?.value.trim();
-  const emoji=document.getElementById('nc-emoji')?.value.trim()||'📌';
+  const picked=document.querySelector('.emoji-btn.picked')?.dataset.emoji||'📌';
+  const emoji=picked;
   const colorHex=document.getElementById('nc-color')?.value||'#3B82F6';
   if(!label){showToast('Inserisci un nome');return;}
   const key=label.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
@@ -994,7 +1058,16 @@ window.saveEditCategory=async function(key,isDefault){
 };
 window.deleteCategoryConfirm=function(key){
   const cat=allCategories[key];
-  showModal(`<div class="modal-title">Elimina "${cat?.label}"?</div><p style="color:var(--text-sub);font-size:13px;margin-bottom:7px">Cosa fare con gli eventi in questa categoria?</p><div class="modal-actions" style="flex-direction:column;gap:7px"><button class="btn-primary-sm" style="background:#dc2626" onclick="deleteCategoryNow('${key}',true,null)">Elimina anche gli eventi</button><button class="btn-primary-sm" onclick="deleteCategoryNow('${key}',false,'cinema')">Sposta in Cinema</button><button class="btn-secondary" onclick="closeModal()">Annulla</button></div>`);
+  const otherCats=Object.entries(allCategories).filter(([k])=>k!==key);
+  const affectedCount=allEvents.filter(e=>e.type===key).length;
+  const reassignOpts=otherCats.map(([k,c])=>`<button class="btn-secondary" style="flex:none;width:100%;text-align:left;padding:10px 14px;display:flex;align-items:center;gap:8px" onclick="deleteCategoryNow('${key}',false,'${k}')"><span>${c.emoji}</span><span style="color:${c.colorHex};font-weight:700">${c.label}</span></button>`).join('');
+  const eventInfo=affectedCount>0?`<p style="color:var(--text-sub);font-size:13px;margin-bottom:10px">${affectedCount} event${affectedCount===1?'o':'i'} in questa categoria. Scegli cosa fare:</p>`:'<p style="color:var(--text-sub);font-size:13px;margin-bottom:10px">Nessun evento in questa categoria.</p>';
+  showModal(`<div class="modal-title">Elimina "${cat?.label}"?</div>${eventInfo}
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${affectedCount>0?reassignOpts:''}
+      <button class="btn-primary-sm" style="background:#dc2626;margin-top:4px" onclick="deleteCategoryNow('${key}',true,null)">🗑 Elimina categoria ${affectedCount>0?'e tutti gli eventi':''}</button>
+      <button class="btn-secondary" onclick="closeModal()">Annulla</button>
+    </div>`);
 };
 window.deleteCategoryNow=async function(key,deleteEvs,reassignTo){
   closeModal();
@@ -1009,10 +1082,19 @@ window.deleteCategoryNow=async function(key,deleteEvs,reassignTo){
 window.showModal=function(html){document.getElementById('modal-content').innerHTML=html;document.getElementById('modal-overlay').classList.add('open');};
 window.closeModal=function(e){if(e&&e.target!==document.getElementById('modal-overlay'))return;document.getElementById('modal-overlay').classList.remove('open');};
 
+// ── Measure bottom bar and set CSS var ──
+function updateBBHeight(){
+  const bb=document.querySelector('.bottom-bar');
+  if(bb) document.documentElement.style.setProperty('--bb-h',bb.offsetHeight+'px');
+}
+window.addEventListener('resize',updateBBHeight);
+setTimeout(updateBBHeight,200);
+
 // ── Init ──
 (function(){
   if(localStorage.getItem('strega_dark')==='1'){isDark=true;document.body.classList.add('dark');}
   selDate=todayStr();weekStart=getWeekMonday(new Date());
+  setTimeout(updateBBHeight,100);
 })();
 </script>
 </body>
